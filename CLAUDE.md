@@ -9,8 +9,9 @@ Dette er en gratis nettside for utleie av to sykler (Kalkhoff Entice 3.B Move Tr
 - [script.js](script.js) — språkbytte-logikk
 - [images/](images/) — `kalkhoff-*.jpg` og `richmond-*.jpg` (egne bilder av syklene), `lifestyle-*.jpg` (stemningsbilder brukt i hero, bruker har bekreftet rettigheter)
 
-**Live nettside:** https://stavroslitsos.github.io/sykkelutleie/
+**Live nettside:** https://bikerentaloslo.no/ (custom domain, aktiv) — også tilgjengelig på https://stavroslitsos.github.io/sykkelutleie/
 **GitHub-repo:** https://github.com/stavroslitsos/sykkelutleie (ingen lokal git-auth satt opp — push skjer via GitHub sin web-opplasting i nettleser, ikke `git push`)
+**Domene:** bikerentaloslo.no registrert hos Domeneshop (eid av STAVROS HELSE OG INVEST AS), DNS-pekere satt opp der (4× A-record til GitHub Pages IP-er + `www`-CNAME)
 **Kontakt på siden:** stav.li@hotmail.com
 **Levering/henting:** Kiwi Jerikoveien, Øvre Lindeberg, Oslo
 
@@ -22,15 +23,14 @@ Dette er en gratis nettside for utleie av to sykler (Kalkhoff Entice 3.B Move Tr
 - Bygget hele nettsiden (norsk/engelsk, priser, sykkeldetaljer, vilkår, kontakt).
 - Omdesignet i lys stil med grønn profil, inspirert av referansenettside (promo-bar, header-nav, delt hero-bilde, priser-seksjon med 2 kort).
 - Lagt inn ekte bilder av begge syklene + stemningsbilder i hero.
-- Opprettet GitHub-repo `stavroslitsos/sykkelutleie` og publisert siden via GitHub Pages (live på stavroslitsos.github.io/sykkelutleie).
-- Brukeren registrerte domenet **bikerentaloslo.no** hos Domeneshop.
-- La til `bikerentaloslo.no` som custom domain i GitHub Pages-innstillinger (lagret, venter på DNS).
+- Opprettet GitHub-repo `stavroslitsos/sykkelutleie` og publisert siden via GitHub Pages.
+- Brukeren registrerte og fikk godkjent domenet **bikerentaloslo.no** hos Domeneshop.
+- Satt opp DNS-pekere hos Domeneshop (A-poster mot GitHub Pages sine 4 IP-er + `www`-CNAME).
+- Lagt til `bikerentaloslo.no` som custom domain i GitHub Pages-innstillinger — «DNS check successful», siden er bekreftet live og fungerer på https://bikerentaloslo.no/.
 
 **Neste steg:**
-- Domenet `bikerentaloslo.no` venter fortsatt på godkjenning hos Norid («Søknad til behandling» i Domeneshop, ligger under «Mine søknader», ikke «Mine domener» ennå).
-- Når domenet er godkjent/aktivt: gå til Domeneshop → DNS-pekere, legg til A-poster for apex-domenet mot GitHub Pages sine IP-er (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153).
-- Etter DNS er satt opp og verifisert av GitHub: skru på «Enforce HTTPS» i GitHub Pages-innstillingene.
-- Test siden på det nye domenet når alt er live.
+- HTTPS-sertifikat for bikerentaloslo.no var ikke utstedt ennå ved sesjonsslutt (GitHub ordner dette automatisk via Let's Encrypt, tar normalt noen minutter til en time). Sjekk GitHub Pages-innstillinger → skru på «Enforce HTTPS» så snart det er tilgjengelig (sertifikatet må være utstedt før bryteren blir klikkbar).
+- Ellers er nettsiden ferdig og live — ingen andre kjente gjenstående oppgaver.
 
 ## Fast regel for økter
 
