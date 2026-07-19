@@ -1,0 +1,358 @@
+:root {
+  --bg: #ffffff;
+  --bg-section: #f4f5f3;
+  --bg-card: #ffffff;
+  --border: #e2e4e0;
+  --text: #17191a;
+  --text-dim: #5c615e;
+  --accent: #1e8a45;
+  --accent-dark: #166636;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Promo banner */
+.promo-bar {
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  letter-spacing: 0.02em;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-group a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.nav-group a:hover {
+  color: var(--accent);
+}
+
+.brand {
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+#lang-toggle {
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+#lang-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Hero */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  height: 360px;
+  overflow: hidden;
+}
+
+.hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.intro {
+  padding: 28px 0 8px;
+}
+
+.intro p {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+}
+
+/* Rates preview section */
+.rates {
+  background: var(--bg-section);
+  padding: 48px 0 56px;
+  text-align: center;
+}
+
+.rates h2 {
+  color: var(--accent);
+  font-size: 2rem;
+  font-style: italic;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0 0 16px;
+}
+
+.rates .divider {
+  width: 80px;
+  height: 2px;
+  background: var(--border);
+  margin: 0 auto 36px;
+}
+
+.rate-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 24px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.rate-card {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rate-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+}
+
+.rate-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.rate-card .rate-card-body {
+  padding: 16px;
+}
+
+.rate-card .rate-card-body h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+}
+
+.rate-card .from-price {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* Bike detail sections */
+.bike {
+  padding: 44px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.bike h2 {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.bike .subtitle {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 18px;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.gallery a {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.gallery img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bike-desc {
+  white-space: pre-line;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+.price-note {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.price-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.price-card {
+  background: var(--bg-section);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 8px;
+  text-align: center;
+}
+
+.price-card .amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.price-card .period {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.terms {
+  padding: 32px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.terms h2 {
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.terms p {
+  margin-bottom: 14px;
+}
+
+.contact {
+  padding: 44px 0 60px;
+  text-align: center;
+}
+
+.contact h2 {
+  font-size: 1.3rem;
+}
+
+.contact .delivery {
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+.contact-btn {
+  display: inline-block;
+  margin-top: 16px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.contact-btn:hover {
+  background: var(--accent-dark);
+}
+
+footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  padding: 20px 0 40px;
+  border-top: 1px solid var(--border);
+}
+
+[data-lang] {
+  display: none;
+}
+
+html[lang="no"] [data-lang="no"],
+html[lang="en"] [data-lang="en"] {
+  display: revert;
+}
+
+html[lang="no"] span[data-lang="no"],
+html[lang="en"] span[data-lang="en"] {
+  display: inline;
+}
+
+@media (max-width: 600px) {
+  .hero {
+    height: 220px;
+  }
+  .nav-group {
+    gap: 12px;
+  }
+  .nav-group a {
+    font-size: 0.75rem;
+  }
+  .rates h2 {
+    font-size: 1.4rem;
+  }
+  .rate-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .price-cards {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .price-card .amount {
+    font-size: 1.15rem;
+  }
+}
