@@ -168,7 +168,8 @@ header {
 .rate-card img {
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--bg-section);
   display: block;
 }
 
@@ -223,7 +224,8 @@ header {
 .gallery img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--bg-section);
   display: block;
 }
 
