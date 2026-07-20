@@ -17,20 +17,27 @@ Dette er en gratis nettside for utleie av to sykler (Kalkhoff Entice 3.B Move Tr
 
 ## Status
 
-**Sist oppdatert:** 2026-07-19
+**Sist oppdatert:** 2026-07-20
 
 **Gjort:**
 - Bygget hele nettsiden (norsk/engelsk, priser, sykkeldetaljer, vilkår, kontakt).
 - Omdesignet i lys stil med grønn profil, inspirert av referansenettside (promo-bar, header-nav, delt hero-bilde, priser-seksjon med 2 kort).
 - Lagt inn ekte bilder av begge syklene + stemningsbilder i hero.
 - Opprettet GitHub-repo `stavroslitsos/sykkelutleie` og publisert siden via GitHub Pages.
-- Brukeren registrerte og fikk godkjent domenet **bikerentaloslo.no** hos Domeneshop.
-- Satt opp DNS-pekere hos Domeneshop (A-poster mot GitHub Pages sine 4 IP-er + `www`-CNAME).
-- Lagt til `bikerentaloslo.no` som custom domain i GitHub Pages-innstillinger — «DNS check successful», siden er bekreftet live og fungerer på https://bikerentaloslo.no/.
+- Registrerte og fikk godkjent domenet **bikerentaloslo.no** hos Domeneshop, satt opp DNS (A-poster + www-CNAME) — siden er live og bekreftet fungerende.
+- Lagt til Hygglo-lenker (alternativ betalingsmåte for norske leietakere) under hver sykkel.
+- Byttet Richmond-bildesettet til nye bilder, fjernet all EXIF-metadata slik at orienteringen vises korrekt i alle nettlesere (viktig lærdom: EXIF-basert auto-rotasjon er upålitelig — bake alltid rotasjonen inn i pikslene og strip metadata).
+- Fikset bilde-beskjæring i priskort/galleri/hero (`object-fit: contain` i stedet for `cover`) slik at hele sykkelen alltid vises.
+- SEO-optimalisering: meta-tagger, Open Graph, JSON-LD (SportingGoodsStore), `robots.txt`, `sitemap.xml`, manglende H1 lagt til, søkeord i alt-tekster.
+- Google Search Console: domene verifisert (DNS TXT-post hos Domeneshop), sitemap sendt inn, forside meldt til prioritert indeksering.
+- Bing Webmaster Tools: importert via Google Search Console, sitemap sendt inn, forside meldt til indeksering.
+- Google Business Profile opprettet («Pedal Point Oslo», kategori Bicycle rental service, betjeningsområde Oslo, nettside lenket, beskrivelse skrevet). Adresse-verifisering (postkort) er igangsatt av bruker.
 
 **Neste steg:**
-- HTTPS-sertifikat for bikerentaloslo.no var ikke utstedt ennå ved sesjonsslutt (GitHub ordner dette automatisk via Let's Encrypt, tar normalt noen minutter til en time). Sjekk GitHub Pages-innstillinger → skru på «Enforce HTTPS» så snart det er tilgjengelig (sertifikatet må være utstedt før bryteren blir klikkbar).
-- Ellers er nettsiden ferdig og live — ingen andre kjente gjenstående oppgaver.
+- **Google Business Profile-verifisering pågår:** Google ba om videoverifisering i stedet for/i tillegg til postkort — brukeren må selv filme et sammenhengende opptak som viser (1) omgivelser/gateskilt i Oslo, (2) firmanavnet «Pedal Point Oslo» skrevet/trykket synlig, (3) en av syklene eller nettsiden som bevis på virksomheten. Dette kan ikke gjøres av Claude (krever fysisk kamera). Fortsett fra `business.google.com` når video er klar, eller vurder «Change option» for alternativ verifiseringsmetode.
+- Bekreft at «Enforce HTTPS» er skrudd på i GitHub Pages-innstillinger (var ikke bekreftet ved forrige sjekk — sertifikatet utstedes automatisk av GitHub, kan ta litt tid).
+- Vurder å legge til bilder av syklene i Google Business Profile når den er verifisert (gjøres enklest fra mobil).
+- Ellers er nettsiden ferdig og live.
 
 ## Fast regel for økter
 
