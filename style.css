@@ -111,6 +111,11 @@ header {
   padding: 28px 0 8px;
 }
 
+.intro h1 {
+  font-size: 1.4rem;
+  margin: 0 0 10px;
+}
+
 .intro p {
   color: var(--text-dim);
   font-size: 1.05rem;
