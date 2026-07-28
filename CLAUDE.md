@@ -32,10 +32,11 @@ Dette er en gratis nettside for utleie av to sykler (Kalkhoff Entice 3.B Move Tr
 - Google Search Console: domene verifisert (DNS TXT-post hos Domeneshop), sitemap sendt inn, forside meldt til prioritert indeksering.
 - Bing Webmaster Tools: importert via Google Search Console, sitemap sendt inn, forside meldt til indeksering.
 - Google Business Profile opprettet («Pedal Point Oslo», kategori Bicycle rental service, betjeningsområde Oslo, nettside lenket, beskrivelse skrevet). Adresse-verifisering (postkort) er igangsatt av bruker.
+- Skrudde på «Enforce HTTPS» i GitHub Pages-innstillinger (var av) — bekreftet at `http://bikerentaloslo.no/` nå omdirigerer til `https://`.
+- Fikk e-post fra Google Search Console om «Alternate page with proper canonical tag» — sjekket og bekreftet at dette var helt ufarlig (gjaldt kun http-versjonen av forsiden, som korrekt peker til https-versjonen via canonical-tag). Ingen faktisk feil, men trigget HTTPS-fiksen over.
 
 **Neste steg:**
 - **Google Business Profile-verifisering pågår:** Google ba om videoverifisering i stedet for/i tillegg til postkort — brukeren må selv filme et sammenhengende opptak som viser (1) omgivelser/gateskilt i Oslo, (2) firmanavnet «Pedal Point Oslo» skrevet/trykket synlig, (3) en av syklene eller nettsiden som bevis på virksomheten. Dette kan ikke gjøres av Claude (krever fysisk kamera). Fortsett fra `business.google.com` når video er klar, eller vurder «Change option» for alternativ verifiseringsmetode.
-- Bekreft at «Enforce HTTPS» er skrudd på i GitHub Pages-innstillinger (var ikke bekreftet ved forrige sjekk — sertifikatet utstedes automatisk av GitHub, kan ta litt tid).
 - Vurder å legge til bilder av syklene i Google Business Profile når den er verifisert (gjøres enklest fra mobil).
 - Ellers er nettsiden ferdig og live.
 
