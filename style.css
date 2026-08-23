@@ -147,9 +147,9 @@ header {
 
 .rate-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
-  max-width: 640px;
+  max-width: 980px;
   margin: 0 auto;
 }
 

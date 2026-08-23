@@ -12,4 +12,4 @@ toggle.addEventListener('click', () => {
   applyLang(next);
 });
 
-applyLang(localStorage.getItem('lang') || 'no');
+applyLang(localStorage.getItem('lang') || 'en');
