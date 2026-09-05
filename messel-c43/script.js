@@ -8,7 +8,7 @@ const images = Array.from({ length: imageCount }, (_, index) =>
   retouched[index + 1] || `media/car-${String(index + 1).padStart(2, "0")}.jpg`
 );
 
-const showcaseIndexes = [1, 4, 7, 11, 15];
+const showcaseIndexes = [7, 5, 6, 8, 10];
 const showcase = document.querySelector("#showcaseGallery");
 const gallery = document.querySelector("#gallery");
 const dialog = document.querySelector("#lightbox");
