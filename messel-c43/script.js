@@ -1,6 +1,11 @@
 const imageCount = 35;
+const retouched = {
+  26: "media/car-26-retouched.png",
+  33: "media/car-33-retouched.png",
+  35: "media/car-35-retouched.png"
+};
 const images = Array.from({ length: imageCount }, (_, index) =>
-  `media/car-${String(index + 1).padStart(2, "0")}.jpg`
+  retouched[index + 1] || `media/car-${String(index + 1).padStart(2, "0")}.jpg`
 );
 
 const showcaseIndexes = [1, 4, 7, 11, 15];
