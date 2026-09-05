@@ -1,4 +1,4 @@
-const imageCount = 25;
+const imageCount = 35;
 const images = Array.from({ length: imageCount }, (_, index) =>
   `media/car-${String(index + 1).padStart(2, "0")}.jpg`
 );
