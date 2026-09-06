@@ -1,0 +1,39 @@
+.hero {
+  height: calc(min(77.6vw, 900px) + 155px);
+  min-height: 0;
+  background: #090a0c;
+}
+
+.hero > img {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  height: calc(100% - 155px);
+  object-fit: contain;
+  object-position: center;
+}
+
+.hero .shade {
+  background: linear-gradient(180deg, transparent 65%, rgba(9, 10, 12, .35) 82%, #090a0c 100%);
+}
+
+.hero-copy {
+  left: max(6vw, 24px);
+  right: 24px;
+  bottom: 25px;
+}
+
+@media (max-width: 800px) {
+  .hero {
+    height: calc(77.6vw + 155px);
+    min-height: 0;
+  }
+
+  .hero-copy {
+    bottom: 22px;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 13vw, 5rem);
+  }
+}
