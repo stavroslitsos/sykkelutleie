@@ -1,0 +1,96 @@
+/* Responsive hero composition: keep the complete car prominent at every size. */
+@media (max-width: 999px) {
+  .hero {
+    --highlight-band: 158px;
+    height: clamp(720px, 92svh, 860px);
+    min-height: 720px;
+  }
+
+  .hero-highlights {
+    top: 14px;
+    width: min(620px, calc(100% - 32px));
+    height: clamp(108px, 16vw, 130px);
+    gap: 8px;
+  }
+
+  .hero > img {
+    top: var(--highlight-band);
+    left: -9%;
+    width: 118%;
+    height: calc(100% - var(--highlight-band) - 164px);
+    object-fit: cover;
+    object-position: center 78%;
+    transform: none;
+    border-radius: 0;
+  }
+
+  .hero-copy {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: 164px;
+    padding: 24px max(24px, 6vw);
+    background: linear-gradient(180deg, rgba(8, 9, 11, .94), #08090b 34%);
+  }
+
+  .hero h1 {
+    font-size: clamp(3.15rem, 12vw, 5.4rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    --highlight-band: 142px;
+  }
+
+  .hero-highlights {
+    top: 10px;
+    width: calc(100% - 24px);
+    height: 116px;
+    gap: 6px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .hero {
+    --stage-width: min(1600px, calc(100% - 48px));
+    --desktop-rail: clamp(190px, 15vw, 240px);
+  }
+
+  .hero > img {
+    left: calc((100% - var(--stage-width)) / 2 + var(--desktop-rail) + 14px);
+    width: calc(var(--stage-width) - var(--desktop-rail) - 14px);
+    object-position: center 78%;
+  }
+
+  .hero-highlights {
+    left: calc((100% - var(--stage-width)) / 2);
+    width: var(--desktop-rail);
+    height: calc(100% - 36px);
+    grid-template-rows: repeat(3, 1fr);
+  }
+
+  .hero-copy {
+    left: calc((100% - var(--stage-width)) / 2 + var(--desktop-rail) + 34px);
+    bottom: 36px;
+    width: clamp(190px, 15vw, 230px);
+    min-height: 0;
+    padding: 16px;
+    background: rgba(10, 11, 14, .9);
+    backdrop-filter: blur(8px);
+  }
+
+  .hero h1 {
+    font-size: clamp(2.35rem, 3vw, 3.25rem);
+  }
+
+  .hero .eyebrow {
+    margin-bottom: 8px;
+    font-size: .58rem;
+  }
+
+  .hero .year {
+    margin-top: 10px;
+    font-size: .78rem;
+  }
+}
