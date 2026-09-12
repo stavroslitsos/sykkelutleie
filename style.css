@@ -147,7 +147,7 @@ header {
 
 .rate-cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
   max-width: 980px;
   margin: 0 auto;
@@ -252,6 +252,10 @@ header {
   gap: 12px;
 }
 
+.price-cards.single {
+  grid-template-columns: minmax(180px, 300px);
+}
+
 .price-card {
   background: var(--bg-section);
   border: 1px solid var(--border);
@@ -316,6 +320,40 @@ header {
   font-size: 1.3rem;
 }
 
+.contact-intro {
+  color: var(--text-dim);
+  margin: 0 auto 18px;
+  max-width: 620px;
+}
+
+.contact-checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 620px;
+  margin: 0 auto 8px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.contact-checklist li {
+  position: relative;
+  padding: 12px 14px 12px 38px;
+  background: var(--bg-section);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.contact-checklist li::before {
+  content: "✓";
+  position: absolute;
+  left: 14px;
+  color: var(--accent);
+  font-weight: 800;
+}
+
 .contact .delivery {
   color: var(--text-dim);
   margin-top: 8px;
@@ -373,6 +411,15 @@ html[lang="en"] span[data-lang="en"] {
   }
   .rate-cards {
     grid-template-columns: 1fr;
+  }
+  .contact-checklist {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  .rate-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
