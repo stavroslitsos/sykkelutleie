@@ -9,6 +9,10 @@
   <meta name="description" content="Presentasjon og bildegalleri for Mercedes-Benz C250 Coupé 2017, registreringsnummer UR98251.">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="hero-fit.css?v=20260906-1">
+  <style>
+    .gallery-group + .gallery-group { margin-top: 48px; }
+    .gallery-group h3 { margin: 0 0 18px; font-size: clamp(1.25rem, 2vw, 1.7rem); }
+  </style>
 </head>
 <body>
   <header class="hero">
@@ -57,7 +61,14 @@
         <div><p class="eyebrow">Nyeste bilder</p><h2>Ny bildeserie</h2></div>
         <p>Svart panserstripe, spoiler, diffuser, sidevinger, røde kalipere og Panamericana-grill.</p>
       </div>
-      <div class="current-grid" id="currentGallery"></div>
+      <div class="gallery-group">
+        <h3>Kjølige, dempede toner</h3>
+        <div class="current-grid" id="coolGallery"></div>
+      </div>
+      <div class="gallery-group">
+        <h3>Varme høsttoner</h3>
+        <div class="current-grid" id="warmGallery"></div>
+      </div>
     </section>
 
     <section class="video-section">
@@ -72,10 +83,17 @@
 
     <section class="gallery-section">
       <div class="section-heading">
-        <div><p class="eyebrow">Komplett arkiv</p><h2>Alle bilder</h2></div>
+        <div><p class="eyebrow">Bildearkiv</p><h2>Tidligere bilder</h2></div>
         <p>Trykk på et bilde for større visning.</p>
       </div>
-      <div class="gallery" id="gallery"></div>
+      <div class="gallery-group">
+        <h3>Eldre utendørsbilder</h3>
+        <div class="gallery" id="outdoorGallery"></div>
+      </div>
+      <div class="gallery-group">
+        <h3>Forhandlerbilder og interiør</h3>
+        <div class="gallery" id="dealerGallery"></div>
+      </div>
     </section>
 
     <p class="footnote">Øvrige kjøretøyopplysninger kan kontrolleres med registreringsnummer UR98251.</p>
