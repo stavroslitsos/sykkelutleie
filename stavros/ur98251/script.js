@@ -1,7 +1,14 @@
-const imageCount = 50;
-const images = Array.from({ length: imageCount }, (_, index) =>
+const newImages = [
+  "new-02.jpg", "new-04.jpg", "new-01.jpg", "new-07.jpg",
+  "new-09.jpg", "new-03.jpg", "new-05.jpg", "new-06.jpg",
+  "new-08.jpg", "new-10.jpg", "new-11.jpg", "new-12.jpg",
+  "new-13.jpg", "new-14.jpg", "new-15.jpg", "new-16.jpg"
+].map(file => `media/${file}`);
+const archiveImages = Array.from({ length: 50 }, (_, index) =>
   `media/car-${String(index + 1).padStart(2, "0")}.jpg`
 );
+const images = [...newImages, ...archiveImages];
+const imageCount = images.length;
 
 const currentGallery = document.querySelector("#currentGallery");
 const gallery = document.querySelector("#gallery");
@@ -18,7 +25,7 @@ function photoButton(src, index, eager = false) {
 
   const img = document.createElement("img");
   img.src = src;
-  img.alt = index < 5
+  img.alt = index < newImages.length
     ? `Nyere bilde av Mercedes-Benz C250 Coupé, bilde ${index + 1}`
     : `Mercedes-Benz C250 Coupé, bilde ${index + 1}`;
   img.loading = eager ? "eager" : "lazy";
@@ -28,7 +35,7 @@ function photoButton(src, index, eager = false) {
   return button;
 }
 
-images.slice(0, 5).forEach((src, index) =>
+newImages.forEach((src, index) =>
   currentGallery.append(photoButton(src, index, index === 0))
 );
 images.forEach((src, index) => gallery.append(photoButton(src, index)));
