@@ -1,16 +1,18 @@
 const coolImages = [
   "new-02.jpg", "new-03.jpg", "new-04.jpg", "new-05.jpg",
-  "new-16.jpg", "new-07.jpg", "new-08.jpg", "new-10.jpg",
-  "new-12.jpg", "new-14.jpg", "new-15.jpg"
+  "new-16.jpg", "new-07.jpg", "new-08.jpg", "new-09.jpg",
+  "new-10.jpg", "new-11.jpg", "new-12.jpg", "new-13.jpg",
+  "new-14.jpg", "new-15.jpg"
 ].map(file => `media/${file}`);
 const warmImages = [
-  "new-06.jpg", "new-09.jpg", "new-01.jpg", "new-11.jpg", "new-13.jpg"
+  "new-06.jpg", "new-01.jpg"
 ].map(file => `media/${file}`);
-const outdoorArchive = [1, 2, 3, 4, 5, 50].map(number =>
+const outdoorArchive = [1, 2, 3, 4, 50, 48, 49].map(number =>
   `media/car-${String(number).padStart(2, "0")}.jpg`
 );
-const dealerArchive = Array.from({ length: 44 }, (_, index) =>
-  `media/car-${String(index + 6).padStart(2, "0")}.jpg`
+const redactedDealerPhotos = new Set([6, 8, 9, 10, 12, 13, 14, 15, 47]);
+const dealerArchive = Array.from({ length: 42 }, (_, index) =>
+  `media/car-${String(index + 6).padStart(2, "0")}${redactedDealerPhotos.has(index + 6) ? "-redacted.png" : ".jpg"}`
 );
 const newImages = [...coolImages, ...warmImages];
 const images = [...newImages, ...outdoorArchive, ...dealerArchive];
