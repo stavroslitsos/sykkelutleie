@@ -9,7 +9,7 @@ const warmImages = [
   "warm-5135.jpg", "warm-5136.jpg", "warm-5138.jpg",
   "warm-5139.jpg", "warm-5140.jpg", "warm-5141.jpg",
   "warm-5142.jpg", "warm-5143.jpg", "warm-5144.jpg",
-  "warm-5145.jpg", "new-01.jpg", "new-06.jpg"
+  "warm-5145.jpg", "new-01.jpg"
 ].map(file => `media/${file}`);
 const outdoorArchive = [1, 2, 3, 4, 50, 48, 49].map(number =>
   `media/car-${String(number).padStart(2, "0")}.jpg`
