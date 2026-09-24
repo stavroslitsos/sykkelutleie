@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SUKK-kalkulator (svangerskapskvalme)</title>
+
+  <!-- Same font stack as BMI_kalkulator.html -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Merriweather:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      font-weight: 400;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    input, select, textarea, button { font-family: inherit; font-weight: 400; }
+    label { font-family: inherit; font-weight: 400; }
+
+    .page { width: 100%; margin: 0; padding: 0; }
+    .top-bar {
+      background-color: #e0e0e0;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .top-bar h1 { margin: 0; font-size: 22px; font-weight: 700; }
+    .top-bar .subtitle { margin: 0; font-size: 14px; color: #444; opacity: 0.9; }
+
+    .content {
+      padding: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      box-sizing: border-box;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card + .card { margin-top: 16px; }
+
+    .section-title { margin: 0 0 10px 0; font-size: 18px; font-weight: 700; }
+    .muted { color: #666; font-size: 13px; line-height: 1.35; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 18px;
+      align-items: start;
+    }
+    @media (max-width: 820px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .field label { display: block; margin-bottom: 6px; font-size: 14px; color: #222; }
+
+    select, input[type="number"], input[type="range"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      background: #fff;
+      color: #111;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    button {
+      background-color: #5a9;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+      margin: 0;
+    }
+    button:hover { background-color: #489; }
+    button:active { transform: scale(0.98); }
+    button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transition: none;
+      transform: none;
+    }
+    .btn-secondary { background-color: #666; }
+    .btn-secondary:hover { background-color: #555; }
+    .btn-ghost {
+      background: #f1f1f1;
+      color: #111;
+      border: 1px solid #ddd;
+    }
+    .btn-ghost:hover { background: #eaeaea; }
+
+    .result-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .result-big {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 8px 0 0;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+      font-size: 14px;
+    }
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #999;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+    .dot.green { background: #6bbf77; }
+    .dot.yellow { background: #f0c24a; }
+    .dot.orange { background: #f39c3d; }
+    .dot.red { background: #e35d5d; }
+
+    .interp-title { margin: 0 0 10px 0; font-size: 16px; font-weight: 800; }
+    .interp-box {
+      border: 1px solid #e6e6e6;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .interp-row {
+      padding: 14px 14px;
+      background: #fff7d6;
+      border-top: 1px solid #eee2b8;
+      font-size: 15px;
+    }
+    .interp-row:first-child { border-top: none; }
+    .interp-row.active {
+      background: #b7e1b1;
+      border-top-color: #9ed39a;
+      font-weight: 700;
+    }
+    .interp-row small {
+      display: block;
+      margin-top: 6px;
+      font-weight: 400;
+      color: #444;
+      opacity: 0.9;
+    }
+
+    textarea.summary {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      box-sizing: border-box;
+      resize: vertical;
+      min-height: 110px;
+      font-family: 'Roboto', sans-serif;
+      background: #fff;
+    }
+
+    .note { margin-top: 10px; font-size: 12px; color: #666; line-height: 1.35; }
+    .inline-kv { margin: 8px 0 0; font-size: 15px; color: #222; }
+    .inline-kv b { font-weight: 800; }
+
+    .range-row{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .range-pill{
+      min-width: 56px;
+      text-align:center;
+      border: 1px solid #ddd;
+      background:#fafafa;
+      border-radius:999px;
+      padding: 8px 10px;
+      font-weight: 700;
+      color:#111;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="top-bar">
+      <div>
+        <h1>SUKK-kalkulator</h1>
+        <p class="subtitle">Input: 3 spørsmål om siste 24 timer. Output: poengsum og grad av svangerskapskvalme.</p>
+      </div>
+      <div class="muted" style="max-width: 520px;">
+        SUKK (SvangerskapsUtløst KvalmeKvantifisering, PUQE) gir total skår 3–15 (summen av 3 svar á 1–5 poeng).
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Input card -->
+      <div class="card">
+        <h2 class="section-title">Inndata (siste 24 timer)</h2>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="q1">1) Hvor lenge har du følt deg kvalm eller dårlig i magen?</label>
+            <select id="q1">
+              <option value="">Velg…</option>
+              <option value="5">&gt; 6 timer (5 poeng)</option>
+              <option value="4">4–6 timer (4 poeng)</option>
+              <option value="3">2–3 timer (3 poeng)</option>
+              <option value="2">&le; 1 time (2 poeng)</option>
+              <option value="1">Ikke i det hele tatt (1 poeng)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="q2">2) Hvor mange ganger har du kastet opp?</label>
+            <select id="q2">
+              <option value="">Velg…</option>
+              <option value="5">&ge; 7 ganger (5 poeng)</option>
+              <option value="4">5–6 ganger (4 poeng)</option>
+              <option value="3">3–4 ganger (3 poeng)</option>
+              <option value="2">1–2 ganger (2 poeng)</option>
+              <option value="1">Ikke i det hele tatt (1 poeng)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="q3">3) Hvor mange ganger har du hatt brekninger (uten oppkast)?</label>
+            <select id="q3">
+              <option value="">Velg…</option>
+              <option value="5">&ge; 7 ganger (5 poeng)</option>
+              <option value="4">5–6 ganger (4 poeng)</option>
+              <option value="3">3–4 ganger (3 poeng)</option>
+              <option value="2">1–2 ganger (2 poeng)</option>
+              <option value="1">Ikke i det hele tatt (1 poeng)</option>
+            </select>
+            <div class="muted" style="margin-top: 6px;"><i>“Brekninger” = tørrbrekninger/retching uten at du kaster opp.</i></div>
+          </div>
+
+          <div class="field">
+            <label for="well">Vurdering av velbefinnende (valgfritt)</label>
+            <div class="range-row">
+              <input id="well" type="range" min="0" max="10" step="1" value="10" aria-label="Velbefinnende 0 til 10" />
+              <div class="range-pill" id="wellOut">10</div>
+            </div>
+            <div class="muted" style="margin-top: 6px;">0 = verst tenkelig, 10 = like bra som før graviditeten. (Inngår ikke i SUKK-skåren.)</div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button id="btnReset" type="button" class="btn-secondary">Nullstill</button>
+        </div>
+
+        <div id="error" class="note" style="color:#b83b3b; display:none;"></div>
+      </div>
+
+      <!-- Result card -->
+      <div class="card">
+        <div class="result-line">
+          <div>
+            <div class="muted">Resultat</div>
+            <div class="result-big" id="scoreOut">–</div>
+            <div class="inline-kv" id="catOut"><b>Kategori:</b> –</div>
+            <div class="inline-kv" id="helpOut"><b>Anbefalt:</b> –</div>
+          </div>
+
+          <div class="badge" aria-live="polite">
+            <span id="catDot" class="dot"></span>
+            <span id="catLabel">–</span>
+          </div>
+        </div>
+
+        <div class="note" id="scoreNote"></div>
+      </div>
+
+      <!-- Interpretation -->
+      <div class="card">
+        <h3 class="interp-title" id="interpHeader">Tolkning</h3>
+        <div class="interp-box" id="interpBox"></div>
+        <div class="note" style="margin-top: 10px;">
+          
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <h2 class="section-title" style="margin:0;">Oppsummering</h2>
+          <button id="btnCopy" type="button" class="btn-ghost">Kopier</button>
+        </div>
+        <div class="muted" style="margin: 8px 0 10px;">
+          Kopierbar tekst
+        </div>
+        <textarea id="summary" class="summary" readonly></textarea>
+        <div class="note" id="copyStatus" style="display:none; color:#2e7d32;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const el = (id) => document.getElementById(id);
+
+    function setDot(dotClass) {
+      const d = el('catDot');
+      d.className = 'dot';
+      if (dotClass) d.classList.add(dotClass);
+    }
+
+    function parseIntSafe(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? Math.trunc(n) : NaN;
+    }
+
+    function renderNullState() {
+      el('error').style.display = 'none';
+      el('copyStatus').style.display = 'none';
+
+      el('scoreOut').textContent = '–';
+      el('catOut').innerHTML = '<b>Kategori:</b> –';
+      el('helpOut').innerHTML = '<b>Anbefalt:</b> –';
+      el('catLabel').textContent = '–';
+      setDot('');
+      el('scoreNote').textContent = '';
+      el('interpHeader').textContent = 'Tolkning';
+      el('interpBox').innerHTML = '';
+      el('summary').value = '';
+    }
+
+    function categoryFromScore(score) {
+      // SUKK total = 3–15
+      if (score === 3) return { key: 'none', label: 'ingen svangerskapskvalme', dot: 'green', range: '3 poeng' };
+      if (score >= 4 && score <= 6) return { key: 'mild', label: 'lett svangerskapskvalme', dot: 'yellow', range: '4–6 poeng' };
+      if (score >= 7 && score <= 12) return { key: 'moderate', label: 'moderat svangerskapskvalme', dot: 'orange', range: '7–12 poeng' };
+      // 13–15
+      return { key: 'severe', label: 'alvorlig svangerskapskvalme (hyperemesis)', dot: 'red', range: '13–15 poeng' };
+    }
+
+    function helpText(cat) {
+      if (!cat) return '–';
+      if (cat.key === 'none') return 'Oppfølging ved behov.';
+      if (cat.key === 'mild') return 'Prøv råd/tiltak og følg med på utvikling.';
+      if (cat.key === 'moderate') return 'Vurder å kontakte jordmor/lege for råd/behandling.';
+      return 'Kontakt jordmor/lege (evt. legevakt) for vurdering, særlig ved dehydrering/vekttap.';
+    }
+
+    function renderInterpretation(activeKey) {
+      const box = el('interpBox');
+      box.innerHTML = '';
+      el('interpHeader').textContent = 'Tolkning (total skår = sum av 3 svar)';
+
+      const rows = [
+        { id: 'none', text: '3 poeng: ingen svangerskapskvalme' },
+        { id: 'mild', text: '4–6 poeng: lett svangerskapskvalme' },
+        { id: 'moderate', text: '7–12 poeng: moderat svangerskapskvalme' },
+        { id: 'severe', text: '13–15 poeng: alvorlig svangerskapskvalme (hyperemesis)' }
+      ];
+
+      for (const r of rows) {
+        const div = document.createElement('div');
+        div.className = 'interp-row' + (r.id === activeKey ? ' active' : '');
+        div.textContent = r.text;
+        box.appendChild(div);
+      }
+    }
+
+    function buildSummary(q1, q2, q3, score, cat, well) {
+      const lines = [];
+      lines.push('Oppsummering SUKK-kalkulator (siste 24 timer)');
+      lines.push(`- Spm 1 (kvalme/ubehag): ${q1} poeng`);
+      lines.push(`- Spm 2 (oppkast): ${q2} poeng`);
+      lines.push(`- Spm 3 (brekninger uten oppkast): ${q3} poeng`);
+      lines.push(`- Total SUKK: ${score} (kategori: ${cat?.label ?? '–'})`);
+      lines.push(`- Velbefinnende (0–10, valgfritt): ${well}`);
+      return lines.join('\n');
+    }
+
+    function calculate() {
+      el('copyStatus').style.display = 'none';
+
+      const q1 = parseIntSafe(el('q1').value);
+      const q2 = parseIntSafe(el('q2').value);
+      const q3 = parseIntSafe(el('q3').value);
+      const well = parseIntSafe(el('well').value);
+
+      // If not fully filled out yet -> show null state (no noisy errors while typing)
+      if (![q1, q2, q3].every(Number.isFinite)) {
+        renderNullState();
+        // keep wellbeing pill responsive even in null state
+        el('wellOut').textContent = Number.isFinite(well) ? String(well) : '–';
+        return;
+      }
+
+      const score = q1 + q2 + q3;
+      const cat = categoryFromScore(score);
+
+      el('wellOut').textContent = Number.isFinite(well) ? String(well) : '–';
+
+      el('error').style.display = 'none';
+      el('scoreOut').textContent = `${score} poeng`;
+      el('catOut').innerHTML = `<b>Kategori:</b> ${cat.label}`;
+      el('helpOut').innerHTML = `<b>Anbefalt:</b> ${helpText(cat)}`;
+
+      el('catLabel').textContent = cat.label;
+      setDot(cat.dot);
+
+      el('scoreNote').textContent = `Skala: 3–15 (1–5 poeng per spørsmål). Du ligger i området: ${cat.range}.`;
+
+      renderInterpretation(cat.key);
+      el('summary').value = buildSummary(q1, q2, q3, score, cat, (Number.isFinite(well) ? well : '–'));
+    }
+
+    function resetInputs() {
+      el('q1').value = '';
+      el('q2').value = '';
+      el('q3').value = '';
+      el('well').value = '10';
+      el('wellOut').textContent = '10';
+      calculate(); // will renderNullState()
+    }
+
+    async function copySummary() {
+      const txt = el('summary').value || '';
+      if (!txt.trim()) return;
+
+      try {
+        await navigator.clipboard.writeText(txt);
+        el('copyStatus').textContent = 'Kopiert!';
+        el('copyStatus').style.display = 'block';
+      } catch {
+        el('summary').focus();
+        el('summary').select();
+        document.execCommand('copy');
+        el('copyStatus').textContent = 'Kopiert!';
+        el('copyStatus').style.display = 'block';
+      }
+    }
+
+    function wireAutoUpdate() {
+      ['q1','q2','q3'].forEach(id => {
+        el(id).addEventListener('change', calculate);
+        el(id).addEventListener('input', calculate);
+      });
+      el('well').addEventListener('input', () => {
+        el('wellOut').textContent = String(el('well').value);
+      });
+      el('well').addEventListener('change', calculate);
+    }
+
+    el('btnReset').addEventListener('click', resetInputs);
+    el('btnCopy').addEventListener('click', copySummary);
+
+    wireAutoUpdate();
+    renderNullState();
+    el('wellOut').textContent = String(el('well').value);
+  </script>
+</body>
+</html>
+

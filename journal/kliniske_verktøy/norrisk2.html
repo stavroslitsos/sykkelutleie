@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>NORRISK 2 – kalkulator</title>
+
+  <!-- Match transcribe.html font stack -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* Base Styles (match transcribe.html) */
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      font-weight: 400;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    input, select, textarea, button { font-family: inherit; font-weight: 400; }
+    label { font-family: inherit; font-weight: 400; }
+
+    /* ✅ FIX: Single-column layout so content starts at the left edge */
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      min-height: 1200px;
+    }
+
+    .main-content {
+      grid-column: 1 / 2;
+      grid-row: 1 / 2;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    /* Top Bar (match transcribe.html) */
+    .top-bar {
+      background-color: #e0e0e0;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start; /* <- no back button anymore */
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .top-bar h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+    }
+    .top-bar .subtle {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Button Styles (match transcribe.html) */
+    button {
+      background-color: #5a9;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+      margin: 10px;
+    }
+    button:hover { background-color: #489; }
+    button:active { transform: scale(0.98); }
+    button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transition: none;
+      transform: none;
+    }
+    .btn-secondary { background-color: #777; }
+    .btn-secondary:hover { background-color: #666; }
+
+    /* Content area */
+    .calc-area {
+      border-bottom: 1px solid #ddd;
+      padding: 0 20px 20px 20px;
+    }
+    .calc-area h2 {
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .calc-area p {
+      margin: 0 0 14px 0;
+      color: #555;
+      line-height: 1.35;
+    }
+
+    /* Form styles */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 16px;
+    }
+    @media (max-width: 900px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #333;
+    }
+    .control, .control-row select, .control-row input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      background: #fff;
+      color: #333;
+    }
+    /* Placeholder styling */
+    .control::placeholder { color: #999; }
+    /* Grey placeholder for selects (when value="") */
+    select.control:invalid { color: #999; }
+    select.control option { color: #333; }
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 10px;
+      align-items: center;
+    }
+    .hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.2;
+    }
+
+    /* Result box */
+    .result-box {
+      margin: 18px 0 6px 0;
+      padding: 16px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .result-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .result-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    .zone-pill {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .zone-green { background: #2e7d32; }
+    .zone-yellow { background: #f9a825; color: #111; }
+    .zone-red { background: #c62828; }
+
+    .report-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #eee;
+    }
+    .report-box {
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid #d8e5df;
+      border-radius: 10px;
+      background: #f7fbf9;
+    }
+    .report-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .report-box h3 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .report-copy-btn {
+      margin: 0;
+      padding: 8px 14px;
+      font-size: 14px;
+    }
+    .report-copy-status {
+      min-height: 18px;
+      margin: -4px 0 8px;
+      color: #2e7d32;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: right;
+    }
+    .report-result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .report-result-item {
+      padding: 12px;
+      border: 1px solid #e1e9e5;
+      border-radius: 9px;
+      background: #fff;
+    }
+    .report-result-item span {
+      display: block;
+      margin-bottom: 4px;
+      color: #666;
+      font-size: 12px;
+    }
+    .report-result-item strong {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .report-input-title {
+      margin: 0 0 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .report-input-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 16px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .report-input-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e5ebe8;
+      font-size: 13px;
+    }
+    .report-input-list .report-label { color: #555; }
+    .report-input-list .report-value { font-weight: 600; text-align: right; }
+    @media (max-width: 680px) {
+      .report-result-grid,
+      .report-input-list { grid-template-columns: 1fr; }
+    }
+
+    .warn {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff7e6;
+      border: 1px solid #ffe0a3;
+      color: #6b4b00;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+    .note {
+      padding: 0 20px 20px 20px;
+      color: #666;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    /* Small utility row for buttons */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .btn-row button { margin: 0; }
+  </style>
+</head>
+
+<body>
+  <div class="grid-container">
+    <main class="main-content">
+      <div class="top-bar">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <h1>NORRISK 2 – 10-års risikokalkulator</h1>
+          <div class="subtle">Beregner 10-års risiko (%) og viser grønn/gul/rød sone (45–74 år)</div>
+        </div>
+      </div>
+
+      <div class="calc-area">
+        <h2>Inndata</h2>
+        <p>Fyll inn risikofaktorer. Kolesterol kan oppgis i mmol/L eller mg/dL (konverteres automatisk).</p>
+
+        <form id="norriskForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="sex">Kjønn</label>
+              <select id="sex" class="control" required>
+                <option value="" disabled selected>..</option>
+                <option value="male">Mann</option>
+                <option value="female">Kvinne</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="age">Alder (år)</label>
+              <input id="age" class="control" type="number" inputmode="numeric" min="30" max="90" step="1" placeholder="f.ex 55" />
+              <div class="hint">Fargesonene brukes for 45–74 år. Utenfor dette vises risiko, men sone merkes som “individuell vurdering”.</div>
+            </div>
+
+            <div class="field">
+              <label for="smoker">Røyker (daglig)</label>
+              <select id="smoker" class="control" required>
+                <option value="" disabled selected>..</option>
+                <option value="no">Nei</option>
+                <option value="yes">Ja</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="bpmed">Tar blodtrykksmedisin</label>
+              <select id="bpmed" class="control" required>
+                <option value="" disabled selected>..</option>
+                <option value="no">Nei</option>
+                <option value="yes">Ja</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="sbp">Systolisk blodtrykk (mmHg)</label>
+              <input id="sbp" class="control" type="number" inputmode="decimal" min="70" max="260" step="1" placeholder="f.ex 140" />
+            </div>
+
+            <div class="field">
+              <label for="family">Førstegradsslektninger med hjerteinfarkt før 60 år</label>
+              <select id="family" class="control">
+                <option value="0" selected>Ingen</option>
+                <option value="1">1 slektning</option>
+                <option value="2">2 eller flere</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Total-kolesterol</label>
+              <div class="control-row">
+                <input id="tc" class="control" type="number" inputmode="decimal" min="1" max="25" step="0.1" placeholder="f.ex 6,0" />
+                <select id="tcUnit" class="control">
+                  <option value="mmol" selected>mmol/L</option>
+                  <option value="mgdl">mg/dL</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>HDL-kolesterol</label>
+              <div class="control-row">
+                <input id="hdl" class="control" type="number" inputmode="decimal" min="0.1" max="15" step="0.1" placeholder="f.ex 1,2" />
+                <select id="hdlUnit" class="control">
+                  <option value="mmol" selected>mmol/L</option>
+                  <option value="mgdl">mg/dL</option>
+                </select>
+              </div>
+              <div class="hint">Lav HDL flagges ved &lt;1.0 mmol/L (menn) og &lt;1.3 mmol/L (kvinner).</div>
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:14px;">
+            <button id="calcBtn" type="submit">Kalkuler</button>
+            <button id="resetBtn" type="button" class="btn-secondary">Nullstill</button>
+          </div>
+        </form>
+
+        <div class="result-box" aria-live="polite" aria-atomic="true">
+          <div class="result-row">
+            <div>
+              <div style="font-size:14px; color:#555; margin-bottom:4px;">10-års risiko</div>
+              <div id="riskValue" class="result-value">–</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:14px; color:#555; margin-bottom:6px;">Risikosone</div>
+              <div id="zonePill" class="zone-pill zone-green" style="display:none;">–</div>
+              <div id="zoneText" style="font-size:13px; color:#555; margin-top:8px;"></div>
+            </div>
+          </div>
+
+          <div id="ageWarn" class="warn" style="display:none;"></div>
+
+          <div class="report-actions">
+            <button id="reportBtn" type="button" disabled>Vis rapport</button>
+          </div>
+
+          <section id="reportBox" class="report-box" hidden aria-live="polite">
+            <div class="report-heading">
+              <h3>Rapport</h3>
+              <button id="copyReportBtn" class="report-copy-btn" type="button">Kopier</button>
+            </div>
+            <div id="copyReportStatus" class="report-copy-status" role="status" aria-live="polite"></div>
+            <div class="report-result-grid">
+              <div class="report-result-item">
+                <span>10-års risiko</span>
+                <strong id="reportRisk">–</strong>
+              </div>
+              <div class="report-result-item">
+                <span>Risikosone</span>
+                <strong id="reportZone">–</strong>
+              </div>
+            </div>
+            <p class="report-input-title">Registrerte opplysninger</p>
+            <ul id="reportInputs" class="report-input-list"></ul>
+          </section>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>Merk:</strong> Dette er en teknisk implementasjon av NORRISK 2-formelen (10-års risiko). Bruk i klinisk sammenheng krever faglig vurdering og riktige målinger/labverdier.
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    // Keep the height behavior from transcribe.html
+    function setGridHeight() {
+      const grid = document.querySelector(".grid-container");
+      if (!grid) return;
+      const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      grid.style.height = height + "px";
+    }
+    window.addEventListener("load", function () {
+      setGridHeight();
+      let interval = setInterval(setGridHeight, 200);
+      setTimeout(() => clearInterval(interval), 2000);
+    });
+    window.addEventListener("resize", setGridHeight);
+
+    // ===== NORRISK 2 calculator =====
+    const $ = (id) => document.getElementById(id);
+
+    function toNumber(v) {
+      if (v === null || v === undefined) return NaN;
+      const s = String(v).trim().replace(",", ".");
+      const n = Number(s);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    // Cholesterol conversion: mg/dL -> mmol/L for cholesterol fractions
+    // 1 mg/dL = 0.02586 mmol/L
+    function cholToMmol(value, unit) {
+      if (!Number.isFinite(value)) return NaN;
+      if (unit === "mgdl") return value * 0.02586;
+      return value;
+    }
+
+    function formatPercentNo(x) {
+      return x.toFixed(1).replace(".", ",") + " %";
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function classifyZone(age, riskPercent) {
+      if (!Number.isFinite(age) || !Number.isFinite(riskPercent)) {
+        return { zone: null, label: "–", detail: "", thresholdsText: "" };
+      }
+
+      if (age >= 45 && age <= 54) {
+        if (riskPercent < 4.0) return { zone: "green", label: "Grønn", detail: "Lav risiko", thresholdsText: "45–54 år: <4 / 4–4,9 / ≥5" };
+        if (riskPercent < 5.0) return { zone: "yellow", label: "Gul", detail: "Middels risiko", thresholdsText: "45–54 år: <4 / 4–4,9 / ≥5" };
+        return { zone: "red", label: "Rød", detail: "Høy risiko", thresholdsText: "45–54 år: <4 / 4–4,9 / ≥5" };
+      }
+
+      if (age >= 55 && age <= 64) {
+        if (riskPercent < 8.0) return { zone: "green", label: "Grønn", detail: "Lav risiko", thresholdsText: "55–64 år: <8 / 8–9,9 / ≥10" };
+        if (riskPercent < 10.0) return { zone: "yellow", label: "Gul", detail: "Middels risiko", thresholdsText: "55–64 år: <8 / 8–9,9 / ≥10" };
+        return { zone: "red", label: "Rød", detail: "Høy risiko", thresholdsText: "55–64 år: <8 / 8–9,9 / ≥10" };
+      }
+
+      if (age >= 65 && age <= 74) {
+        if (riskPercent < 12.0) return { zone: "green", label: "Grønn", detail: "Lav risiko", thresholdsText: "65–74 år: <12 / 12–14,9 / ≥15" };
+        if (riskPercent < 15.0) return { zone: "yellow", label: "Gul", detail: "Middels risiko", thresholdsText: "65–74 år: <12 / 12–14,9 / ≥15" };
+        return { zone: "red", label: "Rød", detail: "Høy risiko", thresholdsText: "65–74 år: <12 / 12–14,9 / ≥15" };
+      }
+
+      return {
+        zone: null,
+        label: "Individuell vurdering",
+        detail: "Fargesonene er definert for 45–74 år",
+        thresholdsText: ""
+      };
+    }
+
+    function computeNorrisk2({ sex, age, sbp, tcMmol, hdlMmol, smoker, bpmed, famCount }) {
+      const A = age - 40;
+      const S = (sbp - 120) / 10;
+      const C = tcMmol - 4;
+
+      const SMK = smoker ? 1 : 0;
+      const BPmed = bpmed ? 1 : 0;
+
+      const lowHDL = (sex === "female")
+        ? (hdlMmol < 1.3 ? 1 : 0)
+        : (hdlMmol < 1.0 ? 1 : 0);
+
+      const familyCHD_1 = (famCount === 1) ? 1 : 0;
+      const familyCHD_2 = (famCount >= 2) ? 1 : 0;
+
+      let w;
+      if (sex === "male") {
+        w =
+          0.11447 * A
+          - 0.00043 * (A * A)
+          + 0.22283 * S
+          + 0.35625 * C
+          + 0.91727 * SMK
+          - 0.00896 * C * A
+          - 0.00430 * S * A
+          - 0.02051 * SMK * A
+          + 0.27824 * BPmed
+          + 0.33162 * lowHDL
+          + 0.29986 * familyCHD_1
+          + 0.59692 * familyCHD_2;
+      } else {
+        w =
+          0.13037 * A
+          - 0.00066 * (A * A)
+          + 0.25241 * S
+          + 0.07235 * C
+          + 1.26781 * SMK
+          - 0.00500 * S * A
+          - 0.02456 * SMK * A
+          + 0.19200 * BPmed
+          + 0.32377 * lowHDL
+          + 0.25361 * familyCHD_1
+          + 0.54909 * familyCHD_2;
+      }
+
+      const hr = Math.exp(w);
+      const lambda10 = (sex === "male") ? 0.00526 : 0.00232;
+      const risk = 1 - Math.exp(-hr * lambda10);
+
+      return risk * 100;
+    }
+
+    function validateInputs(vals) {
+      const issues = [];
+
+      if (vals.sex !== "male" && vals.sex !== "female") issues.push("Kjønn må velges.");
+      if (vals.smoker !== true && vals.smoker !== false) issues.push("Røyker (daglig) må velges.");
+      if (vals.bpmed !== true && vals.bpmed !== false) issues.push("Tar blodtrykksmedisin må velges.");
+
+
+      if (!Number.isFinite(vals.age)) issues.push("Alder må være et tall.");
+      if (!Number.isFinite(vals.sbp)) issues.push("Systolisk blodtrykk må være et tall.");
+      if (!Number.isFinite(vals.tcMmol)) issues.push("Total-kolesterol må være et tall.");
+      if (!Number.isFinite(vals.hdlMmol)) issues.push("HDL-kolesterol må være et tall.");
+
+      // soft warnings (still allow calculation)
+      if (Number.isFinite(vals.age) && (vals.age < 30 || vals.age > 90)) issues.push("Alder virker utenfor forventet område (30–90).");
+      if (Number.isFinite(vals.sbp) && (vals.sbp < 80 || vals.sbp > 250)) issues.push("Systolisk blodtrykk virker utenfor forventet område (80–250).");
+      if (Number.isFinite(vals.tcMmol) && (vals.tcMmol < 2 || vals.tcMmol > 15)) issues.push("Total-kolesterol virker utenfor forventet område (2–15 mmol/L).");
+      if (Number.isFinite(vals.hdlMmol) && (vals.hdlMmol < 0.4 || vals.hdlMmol > 4)) issues.push("HDL virker utenfor forventet område (0,4–4,0 mmol/L).");
+
+      return issues;
+    }
+
+    function readForm() {
+      const sexSel = $("sex").value;
+      const sex = (sexSel === "male" || sexSel === "female") ? sexSel : null;
+
+      const age = toNumber($("age").value);
+      const sbp = toNumber($("sbp").value);
+
+      const tcRaw = toNumber($("tc").value);
+      const tcUnit = $("tcUnit").value;
+      const tcMmol = cholToMmol(tcRaw, tcUnit);
+
+      const hdlRaw = toNumber($("hdl").value);
+      const hdlUnit = $("hdlUnit").value;
+      const hdlMmol = cholToMmol(hdlRaw, hdlUnit);
+      const smokerSel = $("smoker").value;
+      const smoker = smokerSel === "yes" ? true : (smokerSel === "no" ? false : null);
+      const bpmedSel = $("bpmed").value;
+      const bpmed = bpmedSel === "yes" ? true : (bpmedSel === "no" ? false : null);
+      const famCount = Number($("family").value) || 0;
+
+      return { sex, age, sbp, tcMmol, hdlMmol, smoker, bpmed, famCount };
+    }
+
+    function selectedText(id) {
+      const select = $(id);
+      const option = select.options[select.selectedIndex];
+      return option ? option.textContent.trim() : "–";
+    }
+
+    function buildReportData(riskPercent, zoneInfo) {
+      const tcUnit = $("tcUnit").value === "mgdl" ? "mg/dL" : "mmol/L";
+      const hdlUnit = $("hdlUnit").value === "mgdl" ? "mg/dL" : "mmol/L";
+
+      return {
+        risk: formatPercentNo(riskPercent),
+        zone: zoneInfo.zone
+          ? zoneInfo.label + " (" + zoneInfo.detail.toLowerCase() + ")"
+          : zoneInfo.label,
+        inputs: [
+          ["Kjønn", selectedText("sex")],
+          ["Alder", $("age").value + " år"],
+          ["Røyker daglig", selectedText("smoker")],
+          ["Blodtrykksmedisin", selectedText("bpmed")],
+          ["Systolisk blodtrykk", $("sbp").value + " mmHg"],
+          ["Hjerteinfarkt i familien før 60 år", selectedText("family")],
+          ["Total-kolesterol", $("tc").value + " " + tcUnit],
+          ["HDL-kolesterol", $("hdl").value + " " + hdlUnit]
+        ]
+      };
+    }
+
+    function renderReport(report) {
+      $("reportRisk").textContent = report.risk;
+      $("reportZone").textContent = report.zone;
+
+      const list = $("reportInputs");
+      list.innerHTML = "";
+      report.inputs.forEach(([label, value]) => {
+        const item = document.createElement("li");
+        const labelEl = document.createElement("span");
+        const valueEl = document.createElement("span");
+        labelEl.className = "report-label";
+        valueEl.className = "report-value";
+        labelEl.textContent = label;
+        valueEl.textContent = value;
+        item.append(labelEl, valueEl);
+        list.appendChild(item);
+      });
+    }
+
+    function reportAsText(report) {
+      return [
+        "NORRISK 2",
+        "10-års risiko: " + report.risk,
+        "Risikosone: " + report.zone,
+        "",
+        ...report.inputs.map(([label, value]) => label + ": " + value)
+      ].join("\n");
+    }
+
+    async function copyReport(report) {
+      const text = reportAsText(report);
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (_) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+    }
+
+    function renderResult({ riskPercent, zoneInfo, issues }) {
+      const riskValue = $("riskValue");
+      const zonePill = $("zonePill");
+      const zoneText = $("zoneText");
+      const ageWarn = $("ageWarn");
+
+      // risk + zone UI
+      if (!Number.isFinite(riskPercent)) {
+        riskValue.textContent = "–";
+        zonePill.style.display = "none";
+        zoneText.textContent = "";
+      } else {
+        const riskStr = formatPercentNo(riskPercent);
+        riskValue.textContent = riskStr;
+
+        if (zoneInfo.zone) {
+          zonePill.style.display = "inline-block";
+          zonePill.classList.remove("zone-green", "zone-yellow", "zone-red");
+          zonePill.classList.add(
+            zoneInfo.zone === "green" ? "zone-green" :
+            zoneInfo.zone === "yellow" ? "zone-yellow" : "zone-red"
+          );
+          zonePill.textContent = zoneInfo.label;
+          zoneText.textContent = zoneInfo.detail + (zoneInfo.thresholdsText ? " • " + zoneInfo.thresholdsText : "");
+        } else {
+          zonePill.style.display = "none";
+          zoneText.textContent = zoneInfo.label ? (zoneInfo.label + (zoneInfo.detail ? " • " + zoneInfo.detail : "")) : "";
+        }
+      }
+
+      // warnings box (input issues)
+      if (issues && issues.length) {
+        ageWarn.style.display = "block";
+        ageWarn.innerHTML =
+          "<strong>Kontroller inndata:</strong>" +
+          "<ul style=\"margin:8px 0 0 18px; padding:0;\">" +
+          issues.map((x) => "<li>" + escapeHtml(x) + "</li>").join("") +
+          "</ul>";
+      } else {
+        ageWarn.style.display = "none";
+        ageWarn.textContent = "";
+      }
+    }
+
+    function clearResult() {
+      renderResult({
+        riskPercent: NaN,
+        zoneInfo: { zone: null, label: "–", detail: "", thresholdsText: "" },
+        issues: []
+      });
+      $("reportBtn").disabled = true;
+      $("reportBtn").textContent = "Vis rapport";
+      $("reportBox").hidden = true;
+      $("reportInputs").innerHTML = "";
+      $("copyReportStatus").textContent = "";
+    }
+
+    let lastReport = null;
+
+    // Wire up form submit
+    $("norriskForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const vals = readForm();
+      const issues = validateInputs(vals);
+
+      const fatal = issues.filter((x) => x.includes("må være et tall") || x.includes("må velges"));
+      if (fatal.length) {
+        lastReport = null;
+        renderResult({
+          riskPercent: NaN,
+          zoneInfo: { zone: null, label: "–", detail: "", thresholdsText: "" },
+          issues
+        });
+        $("reportBtn").disabled = true;
+        $("reportBox").hidden = true;
+        return;
+      }
+
+      const riskPercent = computeNorrisk2(vals);
+      const zoneInfo = classifyZone(vals.age, riskPercent);
+
+      renderResult({ riskPercent, zoneInfo, issues });
+      lastReport = buildReportData(riskPercent, zoneInfo);
+      $("reportBtn").disabled = false;
+      $("reportBtn").textContent = "Vis rapport";
+      $("reportBox").hidden = true;
+    });
+
+    $("reportBtn").addEventListener("click", () => {
+      if (!lastReport) return;
+      const reportBox = $("reportBox");
+      const willShow = reportBox.hidden;
+      if (willShow) renderReport(lastReport);
+      reportBox.hidden = !willShow;
+      $("reportBtn").textContent = willShow ? "Skjul rapport" : "Vis rapport";
+    });
+
+    $("copyReportBtn").addEventListener("click", async () => {
+      if (!lastReport) return;
+      const button = $("copyReportBtn");
+      const status = $("copyReportStatus");
+      await copyReport(lastReport);
+      button.textContent = "Kopiert";
+      status.textContent = "Rapporten er kopiert til utklippstavlen.";
+      setTimeout(() => {
+        button.textContent = "Kopier";
+        status.textContent = "";
+      }, 1600);
+    });
+
+    $("norriskForm").addEventListener("input", () => {
+      if (!lastReport) return;
+      lastReport = null;
+      $("reportBtn").disabled = true;
+      $("reportBtn").textContent = "Vis rapport";
+      $("reportBox").hidden = true;
+      $("copyReportStatus").textContent = "";
+    });
+
+    // Reset
+    $("resetBtn").addEventListener("click", () => {
+      $("norriskForm").reset();
+      lastReport = null;
+      clearResult();
+    });
+
+    // initial state
+    clearResult();
+  </script>
+</body>
+</html>

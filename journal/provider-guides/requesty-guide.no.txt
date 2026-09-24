@@ -1,0 +1,19 @@
+REQUESTY – API-NØKKEL OG PERSONVERN
+
+1. Opprett konto og fyll på kreditter
+
+Gå til https://app.requesty.ai, opprett en konto og åpne betalingsinnstillingene. Legg inn betalingsmåte og fyll på ønsket saldo.
+
+2. Opprett en API-nøkkel
+
+Åpne API Keys, velg Create New API Key, gi nøkkelen et navn og opprett den. Kopier nøkkelen med én gang, siden hele nøkkelen bare vises ved opprettelsen.
+
+3. Slå av prompt- og svarlogging
+
+Finn nøkkelen under API Keys, åpne innstillingene og sett Logging til Off. Da lagrer ikke Requesty innholdet i promptene eller svarene som sendes med denne nøkkelen.
+
+4. Bruk nøkkelen i appen
+
+Lim nøkkelen inn i feltet Requesty API key på forsiden. Åpne deretter transkripsjonsverktøyet, velg Requesty som leverandør for notatgenerering og velg ønsket modell.
+
+Personvern: Alle Requesty-modellene som er tilgjengelige i denne appen er valgt for behandling kun i EU, uten datalagring og uten modelltrening; prompt- og svarlogging bør være slått av for API-nøkkelen.

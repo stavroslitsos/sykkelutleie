@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMI-kalkulator (KMI)</title>
+
+  <!-- Same font stack as transcribe.html -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Merriweather:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      font-weight: 400;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    input, select, textarea, button { font-family: inherit; font-weight: 400; }
+    label { font-family: inherit; font-weight: 400; }
+
+    .page { width: 100%; margin: 0; padding: 0; }
+    .top-bar {
+      background-color: #e0e0e0;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .top-bar h1 { margin: 0; font-size: 22px; font-weight: 700; }
+    .top-bar .subtitle { margin: 0; font-size: 14px; color: #444; opacity: 0.9; }
+
+    .content {
+      padding: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      box-sizing: border-box;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card + .card { margin-top: 16px; }
+
+    .section-title { margin: 0 0 10px 0; font-size: 18px; font-weight: 700; }
+    .muted { color: #666; font-size: 13px; line-height: 1.35; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 18px;
+      align-items: start;
+    }
+    @media (max-width: 820px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .field label { display: block; margin-bottom: 6px; font-size: 14px; color: #222; }
+
+    .input-wrap {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="number"], select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      background: #fff;
+      color: #111;
+    }
+    .unit { min-width: 44px; text-align: right; color: #666; font-size: 14px; }
+
+    .radio-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 10px 0 2px;
+    }
+    .radio {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      user-select: none;
+    }
+    .radio input { transform: scale(1.15); }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    button {
+      background-color: #5a9;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+      margin: 0;
+    }
+    button:hover { background-color: #489; }
+    button:active { transform: scale(0.98); }
+    button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transition: none;
+      transform: none;
+    }
+    .btn-secondary { background-color: #666; }
+    .btn-secondary:hover { background-color: #555; }
+    .btn-ghost {
+      background: #f1f1f1;
+      color: #111;
+      border: 1px solid #ddd;
+    }
+    .btn-ghost:hover { background: #eaeaea; }
+
+    .result-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .result-big {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 8px 0 0;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+      font-size: 14px;
+    }
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #999;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+    .dot.green { background: #6bbf77; }
+    .dot.yellow { background: #f0c24a; }
+    .dot.orange { background: #f39c3d; }
+    .dot.red { background: #e35d5d; }
+    .dot.darkred { background: #b83b3b; }
+
+    .interp-title { margin: 0 0 10px 0; font-size: 16px; font-weight: 800; }
+    .interp-box {
+      border: 1px solid #e6e6e6;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .interp-row {
+      padding: 14px 14px;
+      background: #fff7d6;
+      border-top: 1px solid #eee2b8;
+      font-size: 15px;
+    }
+    .interp-row:first-child { border-top: none; }
+    .interp-row.active {
+      background: #b7e1b1;
+      border-top-color: #9ed39a;
+      font-weight: 700;
+    }
+    .interp-row small {
+      display: block;
+      margin-top: 6px;
+      font-weight: 400;
+      color: #444;
+      opacity: 0.9;
+    }
+
+    textarea.summary {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      box-sizing: border-box;
+      resize: vertical;
+      min-height: 110px;
+      font-family: 'Roboto', sans-serif;
+      background: #fff;
+    }
+
+    .note { margin-top: 10px; font-size: 12px; color: #666; line-height: 1.35; }
+    .inline-kv { margin: 8px 0 0; font-size: 15px; color: #222; }
+    .inline-kv b { font-weight: 800; }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="top-bar">
+      <div>
+        <h1>BMI / KMI-kalkulator</h1>
+        <p class="subtitle">Input: kjønn, alder, høyde (cm), vekt (kg). Output: BMI og vektkategori.</p>
+      </div>
+      <div class="muted" style="max-width: 520px;">
+        KMI = vekt (kg) / (høyde (m))². For barn (2–&lt;18 år) brukes iso-KMI-grenser (kjønns- og aldersjustert).
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Input card -->
+      <div class="card">
+        <h2 class="section-title">Inndata</h2>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Kjønn</label>
+            <div class="radio-row" role="radiogroup" aria-label="Kjønn">
+              <label class="radio">
+                <input type="radio" name="sex" value="girl" checked />
+                Jente
+              </label>
+              <label class="radio">
+                <input type="radio" name="sex" value="boy" />
+                Gutt
+              </label>
+            </div>
+            <div class="muted" style="margin-top: 6px;"><i>Kjønn påvirker resultatet kun for barn</i></div>
+          </div>
+
+          <div class="field">
+            <label for="age">Alder</label>
+            <div class="input-wrap">
+              <input id="age" type="number" min="0" max="120" step="0.5" placeholder="25" />
+              <div class="unit">år</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="height">Høyde</label>
+            <div class="input-wrap">
+              <input id="height" type="number" min="30" max="250" step="0.1" placeholder="180" />
+              <div class="unit">cm</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="weight">Vekt</label>
+            <div class="input-wrap">
+              <input id="weight" type="number" min="1" max="500" step="0.1" placeholder="72" />
+              <div class="unit">kg</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button id="btnReset" type="button" class="btn-secondary">Nullstill</button>
+        </div>
+
+        <div id="error" class="note" style="color:#b83b3b; display:none;"></div>
+      </div>
+
+      <!-- Result card -->
+      <div class="card">
+        <div class="result-line">
+          <div>
+            <div class="muted">Resultat</div>
+            <div class="result-big" id="bmiOut">–</div>
+            <div class="inline-kv" id="stdOut"><b>standard KMI kategori:</b> –</div>
+            <div class="inline-kv" id="isoOut"><b>iso-KMI kategori:</b> –</div>
+          </div>
+
+          <div class="badge" aria-live="polite">
+            <span id="catDot" class="dot"></span>
+            <span id="catLabel">–</span>
+          </div>
+        </div>
+
+        <div class="note" id="ageNote"></div>
+      </div>
+
+      <!-- Interpretation -->
+      <div class="card">
+        <h3 class="interp-title" id="interpHeader">Tolkning</h3>
+        <div class="interp-box" id="interpBox"></div>
+        <div class="note" style="margin-top: 10px;">
+          Merk: KMI er et forenklet mål og bør tolkes i klinisk sammenheng (muskulatur, kroppsfasong, sykdom, m.m.).
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <h2 class="section-title" style="margin:0;">Oppsummering</h2>
+          <button id="btnCopy" type="button" class="btn-ghost">Kopier</button>
+        </div>
+        <div class="muted" style="margin: 8px 0 10px;">
+          Kopierbar tekst (nyttig i journal/kommunikasjon).
+        </div>
+        <textarea id="summary" class="summary" readonly></textarea>
+        <div class="note" id="copyStatus" style="display:none; color:#2e7d32;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== iso-KMI cutoffs (ages 2.0–18.0 step 0.5) =====
+    const ISO_OVER = [
+      [2.0, 18.09, 19.81, 21.13, 18.36, 19.99, 21.20],
+      [2.5, 17.84, 19.57, 20.90, 18.09, 19.73, 20.95],
+      [3.0, 17.64, 19.38, 20.74, 17.85, 19.50, 20.75],
+      [3.5, 17.48, 19.25, 20.65, 17.66, 19.33, 20.61],
+      [4.0, 17.36, 19.16, 20.62, 17.52, 19.23, 20.56],
+      [4.5, 17.27, 19.14, 20.67, 17.43, 19.20, 20.60],
+      [5.0, 17.23, 19.20, 20.85, 17.39, 19.27, 20.79],
+      [5.5, 17.25, 19.36, 21.16, 17.42, 19.46, 21.15],
+      [6.0, 17.33, 19.62, 21.61, 17.52, 19.76, 21.69],
+      [6.5, 17.48, 19.96, 22.19, 17.67, 20.15, 22.35],
+      [7.0, 17.69, 20.39, 22.88, 17.88, 20.59, 23.08],
+      [7.5, 17.96, 20.89, 23.65, 18.12, 21.06, 23.83],
+      [8.0, 18.28, 21.44, 24.50, 18.41, 21.56, 24.61],
+      [8.5, 18.63, 22.04, 25.42, 18.73, 22.11, 25.45],
+      [9.0, 18.99, 22.66, 26.39, 19.07, 22.71, 26.40],
+      [9.5, 19.38, 23.31, 27.38, 19.43, 23.34, 27.39],
+      [10.0, 19.78, 23.97, 28.36, 19.80, 23.96, 28.35],
+      [10.5, 20.21, 24.62, 29.28, 20.15, 24.54, 29.22],
+      [11.0, 20.66, 25.25, 30.14, 20.51, 25.07, 29.97],
+      [11.5, 21.12, 25.87, 30.93, 20.85, 25.56, 30.63],
+      [12.0, 21.59, 26.47, 31.66, 21.20, 26.02, 31.21],
+      [12.5, 22.05, 27.04, 32.33, 21.54, 26.45, 31.73],
+      [13.0, 22.49, 27.57, 32.91, 21.89, 26.87, 32.19],
+      [13.5, 22.90, 28.03, 33.39, 22.25, 27.26, 32.61],
+      [14.0, 23.27, 28.42, 33.78, 22.60, 27.64, 32.98],
+      [14.5, 23.60, 28.74, 34.07, 22.95, 28.00, 33.29],
+      [15.0, 23.89, 29.01, 34.28, 23.28, 28.32, 33.56],
+      [15.5, 24.13, 29.22, 34.43, 23.59, 28.61, 33.78],
+      [16.0, 24.34, 29.40, 34.55, 23.89, 28.88, 33.98],
+      [16.5, 24.53, 29.55, 34.64, 24.18, 29.15, 34.19],
+      [17.0, 24.70, 29.70, 34.75, 24.46, 29.43, 34.43],
+      [17.5, 24.85, 29.85, 34.87, 24.73, 29.71, 34.71],
+      [18.0, 25.00, 30.00, 35.00, 25.00, 30.00, 35.00]
+    ];
+
+    const ISO_UNDER_185 = [
+      [2.0, 14.96, 15.24],
+      [2.5, 14.77, 15.02],
+      [3.0, 14.60, 14.83],
+      [3.5, 14.44, 14.66],
+      [4.0, 14.30, 14.51],
+      [4.5, 14.16, 14.38],
+      [5.0, 14.04, 14.26],
+      [5.5, 13.93, 14.15],
+      [6.0, 13.85, 14.06],
+      [6.5, 13.81, 14.00],
+      [7.0, 13.83, 14.00],
+      [7.5, 13.90, 14.05],
+      [8.0, 14.00, 14.13],
+      [8.5, 14.13, 14.24],
+      [9.0, 14.26, 14.36],
+      [9.5, 14.40, 14.49],
+      [10.0, 14.58, 14.63],
+      [10.5, 14.78, 14.79],
+      [11.0, 15.03, 14.96],
+      [11.5, 15.30, 15.15],
+      [12.0, 15.59, 15.36],
+      [12.5, 15.91, 15.59],
+      [13.0, 16.23, 15.84],
+      [13.5, 16.55, 16.11],
+      [14.0, 16.86, 16.39],
+      [14.5, 17.16, 16.69],
+      [15.0, 17.43, 16.98],
+      [15.5, 17.68, 17.26],
+      [16.0, 17.90, 17.53],
+      [16.5, 18.08, 17.79],
+      [17.0, 18.24, 18.04],
+      [17.5, 18.38, 18.28],
+      [18.0, 18.50, 18.50]
+    ];
+
+    const el = (id) => document.getElementById(id);
+
+    function parseNumber(v) {
+      if (typeof v !== 'string') v = String(v ?? '');
+      v = v.trim().replace(',', '.');
+      if (!v) return NaN;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function fmt1(n) {
+      if (!Number.isFinite(n)) return '–';
+      return n.toFixed(1).replace('.', ',');
+    }
+
+    function getSex() {
+      return document.querySelector('input[name="sex"]:checked')?.value || 'girl';
+    }
+
+    function clampAgeToHalf(age) {
+      return Math.round(age * 2) / 2;
+    }
+
+    function lookupIsoCutoffs(ageYears, sex) {
+      const age = clampAgeToHalf(ageYears);
+      if (!(age >= 2 && age <= 18)) return null;
+
+      const overRow = ISO_OVER.find(r => r[0] === age);
+      const underRow = ISO_UNDER_185.find(r => r[0] === age);
+      if (!overRow || !underRow) return null;
+
+      const isGirl = sex === 'girl';
+      return {
+        age,
+        iso185: isGirl ? underRow[1] : underRow[2],
+        iso25:  isGirl ? overRow[1]  : overRow[4],
+        iso30:  isGirl ? overRow[2]  : overRow[5],
+        iso35:  isGirl ? overRow[3]  : overRow[6]
+      };
+    }
+
+    function adultCategory18to70(bmi) {
+      if (bmi < 18.5) return { key: 'under', label: 'undervekt', dot: 'orange' };
+      if (bmi < 25)   return { key: 'normal', label: 'normal vekt', dot: 'green' };
+      if (bmi < 30)   return { key: 'over', label: 'overvekt', dot: 'yellow' };
+      if (bmi < 35)   return { key: 'ob1', label: 'fedme', dot: 'red' };
+      if (bmi < 40)   return { key: 'ob2', label: 'alvorlig fedme', dot: 'darkred' };
+      return            { key: 'ob3', label: 'svært alvorlig fedme', dot: 'darkred' };
+    }
+
+    function elderlyCategory71plus(bmi) {
+      if (bmi < 22)   return { key: 'under', label: 'undervekt', dot: 'orange' };
+      if (bmi < 27)   return { key: 'normal', label: 'normal vekt', dot: 'green' };
+      if (bmi < 30)   return { key: 'over', label: 'overvekt', dot: 'yellow' };
+      if (bmi < 35)   return { key: 'ob1', label: 'fedme', dot: 'red' };
+      if (bmi < 40)   return { key: 'ob2', label: 'alvorlig fedme', dot: 'darkred' };
+      return            { key: 'ob3', label: 'svært alvorlig fedme', dot: 'darkred' };
+    }
+
+    function childCategoryIso(bmi, iso) {
+      if (bmi < iso.iso185) return { key: 'under', label: 'undervekt', dot: 'orange' };
+      if (bmi < iso.iso25)  return { key: 'normal', label: 'normal vekt', dot: 'green' };
+      if (bmi < iso.iso30)  return { key: 'over', label: 'overvekt', dot: 'yellow' };
+      if (bmi < iso.iso35)  return { key: 'ob1', label: 'fedme', dot: 'red' };
+      return                  { key: 'ob2', label: 'alvorlig fedme', dot: 'darkred' };
+    }
+
+    function setDot(dotClass) {
+      const d = el('catDot');
+      d.className = 'dot';
+      if (dotClass) d.classList.add(dotClass);
+    }
+
+    function renderNullState() {
+      el('error').style.display = 'none';
+      el('copyStatus').style.display = 'none';
+
+      el('bmiOut').textContent = '–';
+      el('stdOut').innerHTML = '<b>standard KMI kategori:</b> –';
+      el('isoOut').innerHTML = '<b>iso-KMI kategori:</b> –';
+      el('catLabel').textContent = '–';
+      setDot('');
+      el('ageNote').textContent = '';
+      el('interpHeader').textContent = 'Tolkning';
+      el('interpBox').innerHTML = '';
+      el('summary').value = '';
+    }
+
+    function renderInterpretation(mode, sex, cat, iso) {
+      const box = el('interpBox');
+      box.innerHTML = '';
+      const rows = [];
+
+      if (mode === 'child' && iso) {
+        el('interpHeader').textContent = 'Tolkning barn og tenåringer (2–<18 år)';
+        rows.push({ id: 'under', text: `KMI < iso-KMI ${fmt1(iso.iso185)}: undervekt`, sub: `Alder brukt i tabell: ${String(iso.age).replace('.', ',')} år (${sex === 'girl' ? 'jente' : 'gutt'})` });
+        rows.push({ id: 'normal', text: `KMI ${fmt1(iso.iso185)}–${fmt1(iso.iso25)}: normal vekt` });
+        rows.push({ id: 'over',   text: `KMI ≥ iso-KMI ${fmt1(iso.iso25)}: overvekt` });
+        rows.push({ id: 'ob1',    text: `KMI ≥ iso-KMI ${fmt1(iso.iso30)}: fedme` });
+        rows.push({ id: 'ob2',    text: `KMI ≥ iso-KMI ${fmt1(iso.iso35)}: alvorlig fedme` });
+      } else if (mode === 'elderly') {
+        el('interpHeader').textContent = 'Tolkning eldre (≥ 71 år)';
+        rows.push({ id: 'under', text: 'KMI < 22: undervekt' });
+        rows.push({ id: 'normal', text: 'KMI 22–27: normal vekt' });
+        rows.push({ id: 'over', text: 'KMI 27–30: overvekt' });
+        rows.push({ id: 'ob1', text: 'KMI 30–35: fedme' });
+        rows.push({ id: 'ob2', text: 'KMI 35–40: alvorlig fedme' });
+        rows.push({ id: 'ob3', text: 'KMI ≥ 40: svært alvorlig fedme' });
+      } else {
+        el('interpHeader').textContent = 'Tolkning voksne (≥ 18 år)';
+        rows.push({ id: 'under', text: 'KMI < 18,5: undervekt' });
+        rows.push({ id: 'normal', text: 'KMI 18,5–25: normal vekt' });
+        rows.push({ id: 'over', text: 'KMI > 25: overvekt' });
+        rows.push({ id: 'ob1', text: 'KMI ≥ 30: fedme' });
+        rows.push({ id: 'ob2', text: 'KMI ≥ 35: alvorlig fedme' });
+        rows.push({ id: 'ob3', text: 'KMI ≥ 40: svært alvorlig fedme' });
+      }
+
+      for (const r of rows) {
+        const div = document.createElement('div');
+        div.className = 'interp-row' + (r.id === cat.key ? ' active' : '');
+        div.textContent = r.text;
+        if (r.sub) {
+          const sm = document.createElement('small');
+          sm.textContent = r.sub;
+          div.appendChild(sm);
+        }
+        box.appendChild(div);
+      }
+    }
+
+    function buildSummary(age, sex, heightCm, weightKg, bmi, stdCat, mode, iso) {
+      const bmiTxt = fmt1(bmi);
+      const lines = [];
+      lines.push(`Oppsummering BMI / KMI kalkulator`);
+      lines.push(`- Høyde: ${fmt1(heightCm)} cm. Vekt: ${fmt1(weightKg)} kg. Alder: ${String(age).replace('.', ',')} år. KMI: ${bmiTxt} kg/m²`);
+      lines.push(`- standard KMI kategori: ${stdCat?.label ?? '–'}`);
+      if (mode === 'child' && iso) {
+        lines.push(`- iso-KMI kategori: ${stdCat?.label ?? '–'} (grenser: iso18,5=${fmt1(iso.iso185)}, iso25=${fmt1(iso.iso25)}, iso30=${fmt1(iso.iso30)}, iso35=${fmt1(iso.iso35)})`);
+      } else {
+        lines.push(`- iso-KMI kategori: –`);
+      }
+      return lines.join('\n');
+    }
+
+    function calculate() {
+      el('copyStatus').style.display = 'none';
+
+      const sex = getSex();
+      const age = parseNumber(el('age').value);
+      const heightCm = parseNumber(el('height').value);
+      const weightKg = parseNumber(el('weight').value);
+
+      // If not fully filled out yet -> show null state (no noisy errors while typing)
+      if (![age, heightCm, weightKg].every(Number.isFinite)) {
+        renderNullState();
+        return;
+      }
+
+      // Validate
+      if (age < 0 || age > 120 || heightCm <= 0 || weightKg <= 0) {
+        renderNullState();
+        return;
+      }
+
+      const heightM = heightCm / 100;
+      const bmi = weightKg / (heightM * heightM);
+
+      let mode = 'adult';
+      if (age >= 2 && age < 18) mode = 'child';
+      else if (age >= 71) mode = 'elderly';
+
+      let stdCat = null;
+      let iso = null;
+
+      if (mode === 'child') {
+        iso = lookupIsoCutoffs(age, sex);
+        if (!iso) {
+          mode = 'adult';
+          stdCat = adultCategory18to70(bmi);
+        } else {
+          stdCat = childCategoryIso(bmi, iso);
+        }
+      } else if (mode === 'elderly') {
+        stdCat = elderlyCategory71plus(bmi);
+      } else {
+        stdCat = adultCategory18to70(bmi);
+      }
+
+      // UI
+      el('error').style.display = 'none';
+      el('bmiOut').textContent = `${fmt1(bmi)} kg/m²`;
+      el('stdOut').innerHTML = `<b>standard KMI kategori:</b> ${stdCat?.label ?? '–'}`;
+      el('isoOut').innerHTML = `<b>iso-KMI kategori:</b> ${mode === 'child' && iso ? (stdCat?.label ?? '–') : '–'}`;
+
+      el('catLabel').textContent = stdCat?.label ?? '–';
+      setDot(stdCat?.dot ?? '');
+
+      if (mode === 'child') el('ageNote').textContent = 'Barn/tenåring: iso-KMI er kjønns- og aldersjustert (2–<18 år).';
+      else if (mode === 'elderly') el('ageNote').textContent = 'Eldre: normalområdet er høyere fra og med 71 år.';
+      else el('ageNote').textContent = '';
+
+      renderInterpretation(mode, sex, stdCat, iso);
+      el('summary').value = buildSummary(age, sex, heightCm, weightKg, bmi, stdCat, mode, iso);
+    }
+
+    function resetInputs() {
+      // Reset ONLY inputs; output will follow automatically and become null-state
+      document.querySelector('input[name="sex"][value="girl"]').checked = true;
+      el('age').value = '';
+      el('height').value = '';
+      el('weight').value = '';
+      calculate(); // will renderNullState()
+    }
+
+    async function copySummary() {
+      const txt = el('summary').value || '';
+      if (!txt.trim()) return;
+
+      try {
+        await navigator.clipboard.writeText(txt);
+        el('copyStatus').textContent = 'Kopiert!';
+        el('copyStatus').style.display = 'block';
+      } catch {
+        el('summary').focus();
+        el('summary').select();
+        document.execCommand('copy');
+        el('copyStatus').textContent = 'Kopiert!';
+        el('copyStatus').style.display = 'block';
+      }
+    }
+
+    // Auto-update (input/change on all relevant controls)
+    function wireAutoUpdate() {
+      const ids = ['age', 'height', 'weight'];
+      ids.forEach(id => {
+        el(id).addEventListener('input', calculate);
+        el(id).addEventListener('change', calculate);
+      });
+      document.querySelectorAll('input[name="sex"]').forEach(r => {
+        r.addEventListener('change', calculate);
+      });
+    }
+
+    el('btnReset').addEventListener('click', resetInputs);
+    el('btnCopy').addEventListener('click', copySummary);
+
+    // Initial: output nullstilt on load
+    wireAutoUpdate();
+    renderNullState();
+  </script>
+</body>
+</html>

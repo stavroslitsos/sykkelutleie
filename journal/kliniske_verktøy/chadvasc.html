@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CHA₂DS₂-VASc – skår (Atrieflimmer)</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Merriweather:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      font-weight: 400;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    input, select, textarea, button { font-family: inherit; font-weight: 400; }
+    label { font-family: inherit; font-weight: 400; }
+
+    .top-bar {
+      background-color: #e0e0e0;
+      padding: 20px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .top-bar h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    .top-bar .subtitle {
+      margin: 0;
+      font-size: 14px;
+      color: #555;
+      font-weight: 400;
+    }
+
+    .page { width: 100%; box-sizing: border-box; padding: 20px; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+    }
+
+    .card h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .muted { color: #666; font-size: 14px; line-height: 1.35; }
+    .small { font-size: 12px; color: #666; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 16px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 14px; color: #333; }
+    .input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      background: #fff;
+    }
+
+    .inline-radio {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 8px 0 2px;
+    }
+    .inline-radio label {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .inline-radio input[type="radio"] { transform: scale(1.05); }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background: #fafafa;
+    }
+    .toggle-row .tlabel { font-size: 14px; color: #333; }
+    .toggle-row input[type="checkbox"] { transform: scale(1.1); }
+
+    button {
+      background-color: #5a9;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+      margin: 0;
+    }
+    button:hover { background-color: #489; }
+    button:active { transform: scale(0.98); }
+    button.secondary { background: #777; }
+    button.secondary:hover { background: #666; }
+    button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transition: none;
+      transform: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .result-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .score {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      background: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .zone-low .dot { background: #2e7d32; }
+    .zone-mid .dot { background: #f9a825; }
+    .zone-high .dot { background: #c62828; }
+
+    .breakdown {
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+    }
+    @media (max-width: 900px) {
+      .breakdown { grid-template-columns: 1fr; }
+    }
+    .breakdown li {
+      font-size: 14px;
+      color: #333;
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .breakdown .k { color: #555; }
+    .breakdown .v { font-weight: 700; }
+
+    .summary-wrap {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .summary-box {
+      flex: 1;
+      min-width: 260px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #fff;
+      padding: 12px;
+      white-space: pre-wrap;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .toast {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #2e7d32;
+      display: none;
+    }
+    .toast.show { display: block; }
+
+    .warn {
+      border: 1px solid #f0c36d;
+      background: #fff7e6;
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #6a4a00;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-bar">
+    <div>
+      <h1>CHA₂DS₂-VASc – skår (Atrieflimmer)</h1>
+      <p class="subtitle">Beregner skår og veiledende antikoagulasjonsnivå (informasjon/støtte – ikke fasit).</p>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="card">
+      <h2>Indikasjon</h2>
+      <div class="muted">
+        Brukes ved <b>ikke-valvulær atrieflimmer/atrieflutter</b> for å støtte vurdering av tromboembolirisiko og behov for oral antikoagulasjon (OAK).
+        <br /><br />
+        <b>Gjelder ikke</b> som eneste beslutningsgrunnlag ved f.eks. <b>mekanisk hjerteklaff</b> eller <b>moderat–alvorlig mitralstenose</b> (disse håndteres etter egne anbefalinger).
+        <br /><br />
+        Husk å vurdere blødningsrisiko (f.eks. HAS-BLED) og pasientpreferanser i beslutningen.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Inndata</h2>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="age">Alder (år)</label>
+          <input class="input" id="age" type="number" inputmode="numeric" min="0" max="120" placeholder="F.eks. 74" />
+        </div>
+
+        <div class="field">
+          <label>Kjønn</label>
+          <div class="inline-radio" role="radiogroup" aria-label="Kjønn">
+            <label><input type="radio" name="sex" value="male" /> Mann</label>
+            <label><input type="radio" name="sex" value="female" /> Kvinne</label>
+          </div>
+          <div class="small">Merk: “Kvinne” gir 1 poeng i CHA₂DS₂-VASc.</div>
+        </div>
+
+        <div class="field">
+          <label>Risikofaktorer</label>
+
+          <div class="toggle-row">
+            <div class="tlabel">Hjertesvikt / LV-dysfunksjon (C)</div>
+            <input id="hf" type="checkbox" />
+          </div>
+
+          <div class="toggle-row" style="margin-top:10px;">
+            <div class="tlabel">Hypertensjon (H)</div>
+            <input id="htn" type="checkbox" />
+          </div>
+
+          <div class="toggle-row" style="margin-top:10px;">
+            <div class="tlabel">Diabetes (D)</div>
+            <input id="dm" type="checkbox" />
+          </div>
+
+          <div class="toggle-row" style="margin-top:10px;">
+            <div class="tlabel">Tidligere slag/TIA/systemisk emboli (S₂)</div>
+            <input id="stroke" type="checkbox" />
+          </div>
+
+          <div class="toggle-row" style="margin-top:10px;">
+            <div class="tlabel">Vaskulær sykdom (V) (MI/PAD/aortaplaque)</div>
+            <input id="vasc" type="checkbox" />
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="secondary" id="resetBtn" type="button">Nullstill</button>
+      </div>
+    </div>
+
+    <div class="card" aria-live="polite">
+      <div class="result-head">
+        <div>
+          <div class="small">CHA₂DS₂-VASc skår</div>
+          <p class="score" id="scoreText">—</p>
+        </div>
+
+        <div class="badge zone-low" id="zoneBadge" style="opacity:0.55;">
+          <span class="dot"></span>
+          <span id="zoneText">Ingen beregning</span>
+        </div>
+      </div>
+
+      <div class="muted" id="adviceText">Fyll inn alder og kjønn for å beregne.</div>
+
+      <ul class="breakdown" id="breakdown" style="display:none;"></ul>
+
+      <div class="summary-wrap">
+        <div class="summary-box" id="summaryBox">Oppsummering vil vises her når alder og kjønn er valgt.</div>
+        <button id="copyBtn" type="button" disabled>Kopier</button>
+      </div>
+      <div class="toast" id="toast">Kopiert ✅</div>
+
+      <div class="small" style="margin-top:12px;">
+        Veiledende terskler (ofte brukt): 0 (menn) / 1 (kvinner) = OAK ikke anbefalt; 1 (menn) / 2 (kvinner) = kan vurderes; ≥2 (menn) / ≥3 (kvinner) = OAK anbefales.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const el = (id) => document.getElementById(id);
+
+      const ageEl = el('age');
+      const sexEls = () => Array.from(document.querySelectorAll('input[name="sex"]'));
+
+      const hfEl = el('hf');
+      const htnEl = el('htn');
+      const dmEl = el('dm');
+      const strokeEl = el('stroke');
+      const vascEl = el('vasc');
+
+      const scoreText = el('scoreText');
+      const zoneBadge = el('zoneBadge');
+      const zoneText = el('zoneText');
+      const adviceText = el('adviceText');
+      const breakdownEl = el('breakdown');
+      const summaryBox = el('summaryBox');
+      const copyBtn = el('copyBtn');
+      const resetBtn = el('resetBtn');
+      const toast = el('toast');
+
+      function getSex() {
+        const checked = sexEls().find(r => r.checked);
+        return checked ? checked.value : '';
+      }
+
+      function clamp(n, min, max) {
+        if (!Number.isFinite(n)) return NaN;
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function computeAgePoints(age) {
+        if (!Number.isFinite(age)) return 0;
+        if (age >= 75) return 2;
+        if (age >= 65) return 1;
+        return 0;
+      }
+
+      function computeScore() {
+        const ageRaw = parseFloat(ageEl.value);
+        const age = clamp(ageRaw, 0, 120);
+        const sex = getSex();
+
+        const hasRequired = Number.isFinite(age) && !!sex;
+        if (!hasRequired) {
+          return { ready: false, age: Number.isFinite(age) ? age : null, sex, score: null };
+        }
+
+        const agePts = computeAgePoints(age);
+        const sexPts = (sex === 'female') ? 1 : 0;
+
+        const hfPts = hfEl.checked ? 1 : 0;
+        const htnPts = htnEl.checked ? 1 : 0;
+        const dmPts = dmEl.checked ? 1 : 0;
+        const strokePts = strokeEl.checked ? 2 : 0;
+        const vascPts = vascEl.checked ? 1 : 0;
+
+        const score = agePts + sexPts + hfPts + htnPts + dmPts + strokePts + vascPts;
+
+        const breakdown = [
+          { k: 'Alder', v: `${agePts} p` },
+          { k: 'Kjønn', v: `${sexPts} p` },
+          { k: 'Hjertesvikt/LV-dysfunksjon', v: `${hfPts} p` },
+          { k: 'Hypertensjon', v: `${htnPts} p` },
+          { k: 'Diabetes', v: `${dmPts} p` },
+          { k: 'Tidligere slag/TIA/embolisme', v: `${strokePts} p` },
+          { k: 'Vaskulær sykdom', v: `${vascPts} p` },
+        ];
+
+        const riskFactors = [];
+        if (hfEl.checked) riskFactors.push('Hjertesvikt/LV-dysfunksjon');
+        if (htnEl.checked) riskFactors.push('Hypertensjon');
+        if (dmEl.checked) riskFactors.push('Diabetes');
+        if (strokeEl.checked) riskFactors.push('Tidligere slag/TIA/embolisme');
+        if (vascEl.checked) riskFactors.push('Vaskulær sykdom');
+
+        return { ready: true, age, sex, score, breakdown, riskFactors };
+      }
+
+      function classify(score, sex) {
+        // 0 (menn) / 1 (kvinner) = ikke anbefalt
+        // 1 (menn) / 2 (kvinner) = vurder
+        // >=2 (menn) / >=3 (kvinner) = anbefal
+        if (sex === 'male') {
+          if (score === 0) return { zone: 'low', label: 'Lav risiko', advice: 'Antikoagulasjon ikke anbefalt.' };
+          if (score === 1) return { zone: 'mid', label: 'Intermediær', advice: 'Antikoagulasjon kan vurderes (klinisk helhetsvurdering / preferanser).' };
+          return { zone: 'high', label: 'Høy risiko', advice: 'Antikoagulasjon anbefales.' };
+        } else {
+          if (score <= 1) return { zone: 'low', label: 'Lav risiko', advice: 'Antikoagulasjon ikke anbefalt (score 1 kan være kun pga. kjønn).' };
+          if (score === 2) return { zone: 'mid', label: 'Intermediær', advice: 'Antikoagulasjon kan vurderes (klinisk helhetsvurdering / preferanser).' };
+          return { zone: 'high', label: 'Høy risiko', advice: 'Antikoagulasjon anbefales.' };
+        }
+      }
+
+      function setZone(zone, label) {
+        zoneBadge.classList.remove('zone-low', 'zone-mid', 'zone-high');
+        if (zone === 'low') zoneBadge.classList.add('zone-low');
+        if (zone === 'mid') zoneBadge.classList.add('zone-mid');
+        if (zone === 'high') zoneBadge.classList.add('zone-high');
+
+        zoneText.textContent = label;
+        zoneBadge.style.opacity = '1';
+      }
+
+      function resetOutput() {
+        scoreText.textContent = '—';
+        zoneText.textContent = 'Ingen beregning';
+        zoneBadge.classList.remove('zone-low', 'zone-mid', 'zone-high');
+        zoneBadge.classList.add('zone-low');
+        zoneBadge.style.opacity = '0.55';
+
+        adviceText.textContent = 'Fyll inn alder og kjønn for å beregne.';
+        breakdownEl.style.display = 'none';
+        breakdownEl.innerHTML = '';
+
+        summaryBox.textContent = 'Oppsummering vil vises her når alder og kjønn er valgt.';
+        copyBtn.disabled = true;
+      }
+
+      function render() {
+        const r = computeScore();
+        if (!r.ready) {
+          resetOutput();
+          return;
+        }
+
+        scoreText.textContent = String(r.score);
+
+        const cls = classify(r.score, r.sex);
+        setZone(cls.zone, cls.label);
+        adviceText.textContent = cls.advice;
+
+        breakdownEl.innerHTML = '';
+        r.breakdown.forEach(item => {
+          const li = document.createElement('li');
+          const k = document.createElement('span');
+          const v = document.createElement('span');
+          k.className = 'k';
+          v.className = 'v';
+          k.textContent = item.k;
+          v.textContent = item.v;
+          li.appendChild(k);
+          li.appendChild(v);
+          breakdownEl.appendChild(li);
+        });
+        breakdownEl.style.display = 'grid';
+
+        const sexLabel = (r.sex === 'male') ? 'Mann' : 'Kvinne';
+        const rf = (r.riskFactors.length ? r.riskFactors.join(', ') : 'Ingen');
+
+        summaryBox.textContent =
+          `CHA₂DS₂-VASc (atrieflimmer)\n` +
+          `- Alder: ${r.age}\n` +
+          `- Kjønn: ${sexLabel}\n` +
+          `- Risikofaktorer: ${rf}\n` +
+          `- Skår: ${r.score}\n` +
+          `- Kategori: ${cls.label}\n` +
+          `- Veiledning: ${cls.advice}`;
+
+        copyBtn.disabled = false;
+      }
+
+      function hideToastSoon() { toast.classList.remove('show'); }
+
+      // Auto-oppdatering
+      const inputs = [ageEl, hfEl, htnEl, dmEl, strokeEl, vascEl, ...sexEls()];
+      inputs.forEach(node => {
+        node.addEventListener('input', render);
+        node.addEventListener('change', render);
+      });
+
+      // Nullstill input
+      resetBtn.addEventListener('click', () => {
+        ageEl.value = '';
+        sexEls().forEach(r => r.checked = false);
+        hfEl.checked = false;
+        htnEl.checked = false;
+        dmEl.checked = false;
+        strokeEl.checked = false;
+        vascEl.checked = false;
+        render();
+      });
+
+      // Kopier oppsummering
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(summaryBox.textContent || '');
+          toast.classList.add('show');
+          setTimeout(hideToastSoon, 1500);
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = summaryBox.textContent || '';
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch {}
+          document.body.removeChild(ta);
+          toast.classList.add('show');
+          setTimeout(hideToastSoon, 1500);
+        }
+      });
+
+      // Default: nullstilt output ved load
+      resetOutput();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,3310 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="./nordlys.svg" type="image/svg+xml">
+<script src="./nordlys-bootstrap.js"></script>
+  
+  
+  
+  
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/ort.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/bundle.min.js"></script>
+<!-- Removed hard-coded recording.js include; provider will choose module -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title-transcribe">Transcribe Notes – AI Medical Transcription & Clinical Notes for Doctors</title>
+  <!-- Meta description for crawlers -->
+  <meta name="description"
+        content="Secure, AI-powered medical transcription and clinical note generation for healthcare professionals. Ideal for documenting hypertension, diabetes, COPD, and medication regimens." />
+
+  <!-- Meta keywords (for legacy bidders) -->
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+
+  
+  
+  <!-- Markdown rendering for Nyheter_*.md -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+
+  <style>
+    /* Base Styles */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      font-weight: 400;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+
+    /* Make all form UI use the same font as the page text */
+    input, select, textarea, button {
+      font-family: inherit;
+      font-weight: 400;
+    }
+
+    /* Avoid “random bold” label rendering */
+    label {
+      font-family: inherit;
+      font-weight: 400;
+    }
+    /* Grid Layout: history rail and main content */
+    .grid-container {
+      --history-rail-width: clamp(172px, 13vw, 190px);
+      display: grid;
+      grid-template-columns: var(--history-rail-width) minmax(0, 1fr);
+      grid-template-rows: auto; /* Allow rows to size based on content */
+      min-height: 1200px;       /* Ensure the grid is always at least 1200px tall */
+      transition: grid-template-columns 160ms ease;
+    }
+    .grid-container.history-collapsed {
+      --history-rail-width: 42px;
+    }
+    /* Per-workspace note history */
+    .note-history-sidebar {
+      grid-column: 1 / 2;
+      grid-row: 1 / 2;
+      min-width: 0;
+      min-height: 0;
+      background: #eef1f2;
+      border-right: 1px solid #d5dadd;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 3;
+    }
+    .note-history-header {
+      flex: 0 0 auto;
+      padding: 10px 8px 8px;
+      background: #e7ebec;
+      border-bottom: 1px solid #d5dadd;
+      position: relative;
+      z-index: 4;
+    }
+    .note-history-header-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+    .note-history-title {
+      margin: 0;
+      min-width: 0;
+      font-size: 15px;
+      line-height: 1.2;
+      font-weight: 600;
+      color: #333;
+    }
+    .note-history-help {
+      flex: 0 0 auto;
+      margin-left: 0;
+    }
+    .note-history-collapse {
+      flex: 0 0 auto;
+      width: 27px;
+      height: 27px;
+      margin: 0;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #aeb8bc;
+      border-radius: 6px;
+      background: #fff;
+      color: #3f4c51;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .note-history-collapse:hover,
+    .note-history-collapse:focus-visible {
+      border-color: #5a9;
+      background: #f3faf7;
+      color: #287158;
+      outline: none;
+    }
+    .note-history-clear {
+      flex: 0 0 auto;
+      margin: 0 0 0 auto;
+      padding: 4px 7px;
+      border: 1px solid #c96666;
+      border-radius: 6px;
+      background: #fff;
+      color: #a52222;
+      font-size: 11px;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+    .note-history-clear:hover,
+    .note-history-clear:focus-visible {
+      background: #fff0f0;
+      border-color: #a52222;
+    }
+    .note-history-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px;
+      scrollbar-gutter: stable;
+    }
+    .note-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .note-history-card {
+      width: 100%;
+      min-width: 0;
+      margin: 0;
+      padding: 8px 9px;
+      border: 1px solid #cfd6d8;
+      border-radius: 8px;
+      background: #fff;
+      color: #333;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      box-sizing: border-box;
+    }
+    .note-history-card:hover,
+    .note-history-card:focus-visible {
+      border-color: #5a9;
+      box-shadow: 0 2px 7px rgba(37, 113, 83, 0.16);
+      outline: none;
+    }
+    .note-history-card-title,
+    .note-history-card-meta {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .note-history-card-title {
+      font-size: 13px;
+      line-height: 1.25;
+      font-weight: 600;
+    }
+    .note-history-card-meta {
+      margin-top: 3px;
+      font-size: 11px;
+      line-height: 1.25;
+      color: #667075;
+    }
+    .note-history-empty {
+      margin: 8px 2px 0;
+      color: #70787c;
+      font-size: 12px;
+      line-height: 1.4;
+      text-align: center;
+    }
+    .note-history-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      padding: 4vh 4vw;
+      background: rgba(20, 25, 28, 0.58);
+      box-sizing: border-box;
+    }
+    .note-history-modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .note-history-modal-panel {
+      width: min(92vw, 1500px);
+      height: 92vh;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 1px solid #c7cccf;
+      border-radius: 12px;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+    }
+    .note-history-modal-header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      padding: 10px 14px;
+      border-bottom: 1px solid #dde1e3;
+      background: #f6f7f7;
+    }
+    .note-history-modal-title {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 16px;
+      line-height: 1.3;
+      font-weight: 600;
+    }
+    .note-history-modal-actions {
+      position: relative;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+    .note-history-restore-button {
+      margin: 0;
+      padding: 7px 12px;
+      border: 1px solid #7cab98;
+      border-radius: 7px;
+      background: #fff;
+      color: #315f4b;
+      font: 600 13px/1.25 'Roboto', sans-serif;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .note-history-restore-button:hover,
+    .note-history-restore-button:focus-visible,
+    .note-history-restore-button[aria-expanded="true"] {
+      background: #edf7f2;
+      border-color: #5a9;
+      outline: none;
+    }
+    .note-history-restore-menu {
+      position: absolute;
+      z-index: 2;
+      top: calc(100% + 8px);
+      right: 42px;
+      width: min(290px, calc(100vw - 48px));
+      padding: 6px;
+      border: 1px solid #cbd5d1;
+      border-radius: 9px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+    }
+    .note-history-restore-menu[hidden] {
+      display: none;
+    }
+    .note-history-restore-option {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 9px 10px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #2d3d36;
+      font: 500 13px/1.3 'Roboto', sans-serif;
+      text-align: left;
+      cursor: pointer;
+    }
+    .note-history-restore-option:hover,
+    .note-history-restore-option:focus-visible {
+      background: #edf7f2;
+      color: #244f3c;
+      outline: none;
+    }
+    .note-history-modal-close {
+      flex: 0 0 auto;
+      margin: 0;
+      padding: 0 6px;
+      border: 0;
+      background: transparent;
+      color: #d11f1f;
+      font-size: 30px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .note-history-modal-close:hover,
+    .note-history-modal-close:focus-visible {
+      color: #a60000;
+      outline: 2px solid rgba(209, 31, 31, 0.25);
+      outline-offset: 2px;
+    }
+    .note-history-modal-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: minmax(0, 1fr);
+      gap: 12px;
+      padding: 12px 14px 14px;
+      box-sizing: border-box;
+    }
+    .note-history-modal-section {
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .note-history-modal-section-title {
+      flex: 0 0 auto;
+      margin: 0 0 5px;
+      font-size: 14px;
+      line-height: 1.25;
+      font-weight: 600;
+      color: #333;
+    }
+    .note-history-modal-text {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      width: 100%;
+      margin: 0;
+      padding: 11px 12px;
+      overflow: auto;
+      resize: none;
+      border: 1px solid #d7dcde;
+      border-radius: 8px;
+      background: #fbfbfb;
+      color: #222;
+      font: 14px/1.45 'Roboto', sans-serif;
+      box-sizing: border-box;
+    }
+    body.note-history-modal-open {
+      overflow: hidden;
+    }
+    @media (max-width: 900px) {
+      .note-history-modal {
+        padding: 2vh 2vw;
+      }
+      .note-history-modal-panel {
+        width: 96vw;
+        height: 94vh;
+      }
+      .note-history-modal-header {
+        gap: 8px;
+      }
+      .note-history-restore-button {
+        padding: 6px 9px;
+        font-size: 12px;
+      }
+      .note-history-restore-menu {
+        right: 38px;
+      }
+      .note-history-modal-body {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: repeat(3, minmax(230px, 1fr));
+        overflow-y: auto;
+      }
+      .note-history-modal-section {
+        min-height: 230px;
+      }
+    }
+    .note-history-sidebar.is-collapsed .note-history-header {
+      padding: 8px 0;
+      border-bottom: 0;
+    }
+    .note-history-sidebar.is-collapsed .note-history-header-row {
+      justify-content: center;
+    }
+    .note-history-sidebar.is-collapsed .note-history-title,
+    .note-history-sidebar.is-collapsed .note-history-help,
+    .note-history-sidebar.is-collapsed .note-history-clear,
+    .note-history-sidebar.is-collapsed .note-history-scroll {
+      display: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .grid-container {
+        transition: none;
+      }
+    }
+    /* Main Content */
+    .main-content {
+      grid-column: 2 / 3;
+      grid-row: 1 / 2;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      /* Remove horizontal padding so top bar is flush with sidebars */
+      padding: 0;
+    }
+    /* Top Bar within main content */
+    .top-bar {
+      background-color: #e0e0e0; /* Matches sidebars */
+      padding: 20px;            /* Increased padding for a thicker bar */
+      margin-bottom: 20px;      /* Space below the top bar */
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top-bar button {
+      font-size: 18px;
+      padding: 10px 20px;
+    }
+    /* Center group: Guide area + News + Clinical tools (equal spacing) */
+    .top-bar-center {
+      display: flex;
+      align-items: center;
+      gap: 55px;         /* equal space: Guide <-> News and News <-> Clinical tools */
+      flex-wrap: wrap;   /* allow wrap on smaller screens */
+      justify-content: center;
+    }
+    .top-bar-center button {
+      margin: 0;         /* avoid global button margins breaking “equal spacing” */
+    }
+    /* Right-side top-bar controls: Prices sits immediately before language. */
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .top-bar-right > #btnPrices {
+      margin: 0;         /* match the Guide/Status top-bar buttons */
+    }
+
+    /* Language Container in Top Bar (right side) */
+    #lang-container-transcribe {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #lang-icon-transcribe {
+      width: 36px;
+      height: 36px;
+    }
+    #lang-select-transcribe {
+      padding: 5px;
+      font-size: 18px;
+    }
+
+    /* Medical calculator picker (top bar, compact) */
+    #medical-calc-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    #medicalCalcLabel {
+      font-size: 16px;
+      margin: 0;
+      white-space: nowrap;
+    }
+    #medicalCalcSelect {
+      padding: 5px;
+      font-size: 16px;
+      max-width: 220px;
+    }
+    #medicalCalcOpenBtn {
+      margin: 0;           /* override global button margin */
+      padding: 6px 10px;   /* smaller than other buttons */
+      font-size: 14px;
+      border-radius: 8px;
+    }
+    /* Recording Area */
+    .recording-area {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 20px;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .recording-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    /* Provider row (between Recording Area header and timer) */
+    .transcribe-provider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 6px 0 10px;
+    }
+    .transcribe-provider-row label { white-space: nowrap; }
+    #provider-container,
+    #soniox-region-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+    #soniox-region-note {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.2;
+    }
+    .timer {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .timer-status:empty { display: none; }
+    .timer-status {
+      font-weight: normal;
+      opacity: 0.85;
+    }
+    /* Secondary completion label shown *below* the timer (only on completion) */
+    .timer-status-below {
+      margin-top: 6px;
+      font-size: 18px;         /* match .timer font-size */
+      font-weight: normal;
+      opacity: 0.85;
+      color: #2e7d32;
+    }
+    .timer-status-below:empty { display: none; }
+
+    /* Note token/cost readout (separate element so #noteTimer innerText can't wipe it) */
+    .note-usage-cost {
+      margin-top: 4px;
+      font-size: 12px;
+      opacity: 0.6;
+      color: #333;
+      white-space: nowrap;
+    }
+    .note-usage-cost:empty { display: none; }
+    .model-price-label {
+      font-size: 12px;
+      font-weight: normal;
+      color: #666;
+      opacity: 0.8;
+      white-space: nowrap;
+    }
+    .model-price-label:empty,
+    .model-price-label[hidden] {
+      display: none;
+    }
+    /* Cost Overview Hyperlink */
+    #openaiUsageLink {
+      font-size: 16px;
+      font-family: inherit;
+      text-decoration: underline;
+      color: blue;
+      margin: 0;
+    }
+    #openaiUsageLink:hover {
+      color: darkblue;
+    }
+    /* Auto-resizing Textareas */
+    #transcription,
+    #generatedNote,
+    #customPrompt,
+    #supplementaryInfo,
+    #redactorTerms {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+      font-family: 'Roboto', sans-serif;
+      resize: none;
+    }
+    #transcription {
+      resize: vertical;
+    }
+#transcription,
+#generatedNote {
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.completion-flash-host {
+  position: relative;
+  display: block;
+  margin-bottom: 20px;
+  isolation: isolate;
+}
+
+.completion-flash-host > #transcription,
+.completion-flash-host > #generatedNote {
+  margin-bottom: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.completion-flash-host::before,
+.completion-flash-host::after {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+.completion-flash-host::before {
+  content: "";
+  inset: 0;
+  border-radius: 10px;
+}
+
+.completion-flash-host::after {
+  content: "✓";
+  top: 12px;
+  right: 14px;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 700;
+  color: rgba(30, 136, 69, 1);
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.45);
+}
+
+#transcription {
+  min-height: 150px;
+  resize: vertical;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.completion-flash-host.completion-flash > #transcription,
+.completion-flash-host.completion-flash > #generatedNote {
+  animation: completionFieldBorderFlash 1250ms ease-out 1;
+}
+
+.completion-flash-host.completion-flash::before {
+  animation: completionFieldOverlayFlash 1250ms ease-out 1;
+}
+
+.completion-flash-host.completion-flash::after {
+  animation: completionFieldCheckFlash 1250ms ease-out 1;
+}
+
+.completion-flash-host.note-start-sweep > #generatedNote {
+  animation: noteStartFieldPulse 950ms ease-out 1;
+}
+
+.completion-flash-host.note-start-sweep::before {
+  animation: noteStartFieldSweep 950ms ease-out 1;
+}
+
+@keyframes noteStartFieldSweep {
+  0% {
+    opacity: 1;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(3, 169, 244, 0.42) 0%,
+        rgba(3, 169, 244, 0.28) 18%,
+        rgba(3, 169, 244, 0.12) 42%,
+        rgba(3, 169, 244, 0.00) 72%
+      );
+    box-shadow:
+      inset 12px 0 0 rgba(3, 169, 244, 1),
+      inset 0 0 0 999px rgba(3, 169, 244, 0.08);
+  }
+  35% {
+    opacity: 1;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(3, 169, 244, 0.30) 0%,
+        rgba(3, 169, 244, 0.18) 24%,
+        rgba(3, 169, 244, 0.07) 52%,
+        rgba(3, 169, 244, 0.00) 80%
+      );
+    box-shadow:
+      inset 8px 0 0 rgba(3, 169, 244, 0.90),
+      inset 0 0 0 999px rgba(3, 169, 244, 0.05);
+  }
+  100% {
+    opacity: 0;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(41, 182, 246, 0.00) 0%,
+        rgba(41, 182, 246, 0.00) 100%
+      );
+    box-shadow:
+      inset 0 0 0 rgba(41, 182, 246, 0),
+      inset 0 0 0 999px rgba(41, 182, 246, 0);
+  }
+}
+
+@keyframes noteStartFieldPulse {
+  0% {
+    border-color: rgba(3, 169, 244, 1);
+    box-shadow:
+      0 0 0 1px rgba(3, 169, 244, 0.24),
+      0 0 0 9px rgba(3, 169, 244, 0.14);
+  }
+  35% {
+    border-color: rgba(3, 169, 244, 0.88);
+    box-shadow:
+      0 0 0 1px rgba(3, 169, 244, 0.16),
+      0 0 0 6px rgba(3, 169, 244, 0.08);
+  }
+  100% {
+    border-color: #ddd;
+    box-shadow:
+      0 0 0 0 rgba(3, 169, 244, 0),
+      0 0 0 0 rgba(3, 169, 244, 0);
+  }
+}
+
+@keyframes completionFieldBorderFlash {
+  0% {
+    border-color: #1e8845;
+    box-shadow:
+      0 0 0 1px rgba(30, 136, 69, 0.24),
+      0 0 0 11px rgba(30, 136, 69, 0.12);
+  }
+  24% {
+    border-color: #1e8845;
+    box-shadow:
+      0 0 0 1px rgba(30, 136, 69, 0.18),
+      0 0 0 8px rgba(30, 136, 69, 0.08);
+  }
+  100% {
+    border-color: #ddd;
+    box-shadow:
+      0 0 0 0 rgba(30, 136, 69, 0),
+      0 0 0 0 rgba(30, 136, 69, 0);
+  }
+}
+
+@keyframes completionFieldOverlayFlash {
+  0% {
+    opacity: 1;
+    box-shadow: inset 0 0 0 999px rgba(30, 136, 69, 0.22);
+  }
+  24% {
+    opacity: 0.92;
+    box-shadow: inset 0 0 0 999px rgba(30, 136, 69, 0.16);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: inset 0 0 0 999px rgba(30, 136, 69, 0);
+  }
+}
+
+@keyframes completionFieldCheckFlash {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  24% {
+    opacity: 0.94;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+#supplementaryInfo {
+  min-height: 90px;
+  resize: vertical;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#redactorTerms {
+  min-height: 90px;
+  resize: vertical;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-bottom: 8px;
+}
+
+#generatedNote {
+  min-height: 750px; 
+  resize: vertical;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+    #customPrompt {
+      min-height: 200px;
+      resize: vertical; /* user can resize manually */
+    }
+    /* Button Styles */
+    button {
+      background-color: #5a9;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #489;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transition: none;
+      transform: none;
+    }
+
+    /* Auto-clear toggle + tooltip (Supplementary row) */
+    .supp-row-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .auto-clear-label {
+      font-size: 12px;
+      color: #333;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .auto-clear-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    /* Minimal “switch” styling for a checkbox */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 34px;
+      height: 18px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: 0.2s;
+      border-radius: 999px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      top: 2px;
+      background-color: white;
+      transition: 0.2s;
+      border-radius: 50%;
+    }
+    .switch input:checked + .slider {
+      background-color: #5a9; /* match your button green */
+    }
+    .switch input:checked + .slider:before {
+      transform: translateX(16px);
+    }
+
+    /* Hover tooltip (question mark) */
+    .help-tip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid #5a9;
+      color: #5a9;
+      font-size: 12px;
+      line-height: 1;
+      cursor: help;
+      user-select: none;
+      margin-left: 2px;
+    }
+    .help-tip .help-tip-content {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 22px;
+      z-index: 3000;
+      width: 260px;
+      max-width: min(260px, calc(100vw - 24px));
+      background: #fff;
+      color: #333;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: normal;
+      box-sizing: border-box;
+    }
+
+    .help-tip.help-tip-left .help-tip-content {
+      left: auto;
+      right: 0;
+    }
+    .help-tip:hover .help-tip-content,
+    .help-tip:focus-within .help-tip-content {
+      display: block;
+    }
+    /* Auto-copy tooltip only: hover bridge + keep-open behavior */
+#autoCopyModeTooltipContainer {
+  overflow: visible;
+}
+
+#autoCopyModeTooltipContainer::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  right: 0;
+  width: 340px;
+  max-width: min(340px, calc(100vw - 24px));
+  height: 10px;
+  background: transparent;
+}
+
+#autoCopyModeTooltipText {
+  top: 20px;
+  left: auto;
+  right: 0;
+  width: 340px;
+  max-width: min(340px, calc(100vw - 24px));
+  pointer-events: auto;
+}
+
+#autoCopyModeTooltipContainer:hover #autoCopyModeTooltipText,
+#autoCopyModeTooltipContainer:focus-within #autoCopyModeTooltipText,
+#autoCopyModeTooltipText:hover {
+  display: block;
+}
+
+    /* Auto-copy tooltip only: wider and hover-persistent so users can move
+       into the tooltip box and click the download link. */
+    #autoCopyFinishedNoteTooltipContainer {
+      overflow: visible;
+    }
+    #autoCopyFinishedNoteTooltipContainer::after {
+      content: "";
+      position: absolute;
+      top: 16px;
+      right: 0;
+      width: 340px;
+      max-width: min(340px, calc(100vw - 24px));
+      height: 10px;
+      background: transparent;
+    }
+    #autoCopyFinishedNoteTooltipText {
+      top: 20px;
+      width: 340px;
+      max-width: min(340px, calc(100vw - 24px));
+      pointer-events: auto;
+    }
+    #autoCopyFinishedNoteTooltipContainer:hover #autoCopyFinishedNoteTooltipText,
+    #autoCopyFinishedNoteTooltipContainer:focus-within #autoCopyFinishedNoteTooltipText,
+    #autoCopyFinishedNoteTooltipText:hover {
+      display: block;
+    }
+
+
+    .supp-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+    .supp-toolbar-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    /* Recording Transcript + Secondary Note Generator side-by-side layout
+       (mirrors the Supplementary/Redactor layout behaviour). */
+    .transcript-secondary-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+    .transcript-secondary-layout.secondary-open {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .transcript-pane,
+    .secondary-note-pane {
+      min-width: 0;
+    }
+    .secondary-note-pane {
+      display: none;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .transcript-secondary-layout.secondary-open .secondary-note-pane {
+      display: block;
+    }
+    .secondary-note-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .secondary-note-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .secondary-note-row label {
+      font-size: 13px;
+    }
+    .secondary-note-row select {
+      padding: 4px 8px;
+      font-size: 13px;
+      border-radius: 6px;
+      max-width: 100%;
+    }
+    .secondary-note-pane .secondary-inline-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .secondary-source-date-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      margin: -2px 0 8px;
+    }
+    #secondarySourceText,
+    #secondaryGeneratedNote {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+      resize: vertical;
+      min-height: 120px;
+      margin-bottom: 8px;
+    }
+    #secondaryNoteTimer {
+      font-size: 13px;
+      color: #333;
+    }
+    #secondaryNoteStatus {
+      font-size: 12px;
+      color: #555;
+      min-height: 16px;
+      margin: 2px 0 4px;
+    }
+    #secondaryNoteUsageCost {
+      font-size: 12px;
+      color: #555;
+      min-height: 16px;
+      margin-bottom: 4px;
+    }
+    #secondaryGenerateButton,
+    #secondaryAbortButton {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 6px;
+    }
+    #secondaryCopyNoteButton,
+    #secondaryPushToSupplementaryButton {
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      background-color: #5a9;
+    }
+    .secondary-auto-transfer {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 900px) {
+      /* Stack vertically on narrow screens to preserve usability. */
+      .transcript-secondary-layout.secondary-open {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .supplementary-redactor-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+    .supplementary-redactor-layout.redactor-open {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .supplementary-pane,
+    .redactor-pane {
+      min-width: 0;
+    }
+    .redactor-pane {
+      display: none;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .supplementary-redactor-layout.redactor-open .redactor-pane {
+      display: block;
+    }
+    .redactor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .redactor-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+    .redactor-help {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .redactor-section + .redactor-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+    .redactor-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .redactor-mini-help {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+    .redactor-image-toolbar,
+    .redactor-inline-actions,
+    .redactor-actions,
+    .redactor-birthdate-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .redactor-button,
+    .redactor-file-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      background-color: #5a9;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      line-height: 1.2;
+    }
+    .redactor-button[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .redactor-file-button input[type="file"] {
+      display: none;
+    }
+    .redactor-image-frame {
+      margin-top: 8px;
+      min-height: 120px;
+      max-height: 140px;
+      border: 1px dashed #c7d8d2;
+      border-radius: 10px;
+      background: #f8fbfa;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+    .redactor-image-frame:focus-within,
+    .redactor-image-frame.is-focus {
+      outline: 2px solid rgba(85, 170, 153, 0.28);
+      outline-offset: 1px;
+    }
+    .redactor-image-preview {
+      max-width: 100%;
+      max-height: 120px;
+      object-fit: contain;
+      display: block;
+    }
+    .redactor-image-placeholder {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      line-height: 1.35;
+      max-width: 280px;
+    }
+    .redactor-options-grid,
+    .redactor-fields-grid {
+      display: grid;
+      gap: 10px 12px;
+    }
+    .redactor-options-grid {
+      margin-top: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .redactor-fields-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .redactor-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: #444;
+      line-height: 1.3;
+    }
+    .redactor-option input {
+      margin-top: 1px;
+      flex: 0 0 auto;
+    }
+    .redactor-field-group {
+      min-width: 0;
+    }
+    .redactor-field-group label,
+    .redactor-birthdate-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .redactor-field-group textarea {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+    }
+    .redactor-field-group textarea.compact {
+      min-height: 88px;
+    }
+    .redactor-field-group textarea.large {
+      min-height: 220px;
+    }
+    .redactor-inline-actions {
+      margin-top: 8px;
+      justify-content: flex-start;
+    }
+    .redactor-birthdate-row input {
+      flex: 1 1 170px;
+      min-width: 0;
+    }
+    .redactor-status {
+      min-height: 18px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #49655d;
+    }
+    .redactor-status.is-error {
+      color: #b00020;
+    }
+    @media (max-width: 1100px) {
+      .redactor-options-grid,
+      .redactor-fields-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    @media (max-width: 900px) {
+      .supplementary-redactor-layout.redactor-open {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .redactor-pane {
+        width: 100%;
+      }
+    }
+
+    /* Bottom Half: Two Columns */
+    .bottom-half {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+      padding: 0 20px; /* Maintain side padding for bottom half content */
+    }
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Shared section headers for bottom columns */
+    .bottom-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 8px 0 6px 0;
+      min-height: 32px;
+    }
+    .bottom-section-header h3 {
+      margin: 0;
+      line-height: 1.2;
+    }
+    .bottom-section-header-spacer {
+      width: 152px; /* roughly matches checkbox control width so both headings sit on the same visual line */
+      flex: 0 0 152px;
+    }
+    .prompt-include-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin: 0;
+      font-size: 13px;
+      color: #445;
+      white-space: nowrap;
+      flex: 0 0 auto;
+      line-height: 1;
+    }
+
+    #abortButton {
+      margin-left: 4px;
+    }
+
+    /* Prompt backup actions (Custom Prompt column) */
+    .prompt-backup-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 0;
+    }
+    .prompt-backup-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .prompt-backup-actions button {
+      font-size: 14px;
+      padding: 6px 10px;
+    }
+    #promptBackupStatus {
+      min-height: 1.2em;
+      margin: 4px 0 5px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    #promptBackupModalBackdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.38);
+    }
+    #promptBackupModalBackdrop.active {
+      display: flex;
+    }
+    #promptBackupModal {
+      width: min(92vw, 480px);
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding: 15px 17px 17px;
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.27);
+      color: #222;
+      text-align: left;
+    }
+    .prompt-backup-modal__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 9px;
+    }
+    #promptBackupModalTitle {
+      margin: 0;
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 700;
+    }
+    #promptBackupModalClose {
+      min-width: 0;
+      margin: 0;
+      padding: 0 6px;
+      border: 0;
+      background: transparent;
+      color: #c11;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .prompt-backup-modal__notice {
+      margin: 0 0 12px;
+      padding: 10px 11px;
+      border: 1px solid rgba(72, 153, 153, 0.35);
+      border-radius: 10px;
+      background: rgba(85, 170, 153, 0.08);
+      color: #35484a;
+      font-size: 12px;
+      line-height: 1.42;
+    }
+    .prompt-backup-modal__option {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 8px 11px;
+      text-align: left;
+    }
+    .prompt-backup-modal__help {
+      margin: 6px 0 12px;
+      color: #555;
+      font-size: 12px;
+      line-height: 1.38;
+    }
+    .prompt-backup-modal__field-label {
+      display: block;
+      margin: 9px 0 5px;
+      color: #444;
+      font-size: 12px;
+    }
+    .prompt-backup-modal__password {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 14px;
+    }
+    .prompt-backup-modal__password:focus {
+      border-color: #66afe9;
+      outline: none;
+      box-shadow: 0 0 6px rgba(102, 175, 233, 0.42);
+    }
+    .prompt-backup-modal__actions {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 13px;
+    }
+    .prompt-backup-modal__back {
+      border: 1px solid rgba(46, 125, 50, 0.45);
+      background: transparent;
+      color: #2e7d32;
+    }
+    .prompt-backup-modal__back:hover {
+      background: rgba(46, 125, 50, 0.10);
+    }
+    #promptBackupModalStatus {
+      min-height: 1.35em;
+      margin: 10px 0 0;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    /* Guide Overlay Styles */
+    #guideView {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
+      background: white;
+      border: 2px solid #ccc;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 2000;
+    }
+    #guideView.active {
+      display: block;
+    }
+    #guideClose {
+      position: sticky;
+      top: 10px;
+      float: right;
+      background: none;
+      border: none;
+      color: red;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      margin: 0;     /* override global button margin */
+      padding: 0 6px;/* override global button padding */
+      z-index: 2001;
+    }
+
+
+    .news-button-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+
+    .news-latest-badge {
+      display: inline-flex;
+      align-items: center;
+      max-width: 150px;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #d7dbe3;
+      background: #f7f9fc;
+      color: #445;
+      font-size: 11px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
+
+    /* Prices Overlay Styles (same window pattern as Guide) */
+    #pricesView {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
+      box-sizing: border-box;
+      background: white;
+      border: 2px solid #ccc;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 2004;
+      text-align: left;
+    }
+    #pricesView.active {
+      display: block;
+    }
+    #pricesClose {
+      position: sticky;
+      top: 10px;
+      float: right;
+      background: none;
+      border: none;
+      color: red;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      margin: 0;
+      padding: 0 6px;
+      z-index: 2005;
+    }
+    #pricesHeading {
+      margin: 0 46px 6px 0;
+      font-size: 22px;
+    }
+    #pricesIntro {
+      margin: 0 46px 20px 0;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .prices-section {
+      margin-top: 24px;
+    }
+    .prices-section:first-of-type {
+      margin-top: 14px;
+    }
+    .prices-section-title {
+      margin: 0 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #d9dde5;
+      font-size: 19px;
+    }
+    .prices-provider {
+      margin: 18px 0 7px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #263238;
+    }
+    .prices-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin-bottom: 14px;
+    }
+    .prices-table {
+      width: 100%;
+      min-width: 560px;
+      border-collapse: collapse;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .prices-table th,
+    .prices-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+    .prices-table th {
+      background: #f7f9fc;
+      border-top: 1px solid #dde2ea;
+      color: #374151;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .prices-table th:first-child,
+    .prices-table td:first-child {
+      text-align: left;
+    }
+    .prices-table th:not(:first-child),
+    .prices-table td:not(:first-child) {
+      text-align: right;
+      white-space: nowrap;
+    }
+    .prices-model-id {
+      display: block;
+      margin-top: 2px;
+      color: #7a838f;
+      font-size: 11px;
+      font-weight: 400;
+      white-space: normal;
+    }
+    .prices-note {
+      margin: 8px 0 0;
+      color: #626b77;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .prices-footnotes {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+    @media (max-width: 800px) {
+      #pricesView {
+        top: 5%;
+        left: 3%;
+        width: 94%;
+        height: 90%;
+        padding: 16px;
+      }
+      .prices-table {
+        min-width: 520px;
+      }
+    }
+
+    /* News Overlay Styles (same UX as Guide) */
+    #newsView {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
+      background: white;
+      border: 2px solid #ccc;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 2002;
+      text-align: left;
+    }
+    #newsView.active {
+      display: block;
+    }
+    #newsClose {
+      position: sticky;
+      top: 10px;
+      float: right;
+      background: none;
+      border: none;
+      color: red;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      margin: 0;
+      padding: 0 6px;
+      z-index: 2003;
+    }
+        /* Markdown-rendered News content */
+    #newsText {
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0;
+    }
+    #newsText h2 { margin: 0 0 10px; font-size: 20px; }
+    #newsText h3 { margin: 18px 0 8px; font-size: 16px; }
+    #newsText p  { margin: 10px 0; }
+    #newsText hr { border: 0; border-top: 1px solid #e5e5e5; margin: 16px 0; }
+    #newsText ul, #newsText ol { margin: 10px 0 10px 20px; }
+
+    /* Costs & Billing Links Overlay Styles */
+    #billingLinksView {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
+      background: white;
+      border: 2px solid #ccc;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 2001;
+    }
+    #billingLinksView.active {
+      display: block;
+    }
+    #billingLinksView .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    #billingLinksClose {
+      font-size: 22px;
+      line-height: 1;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #billingLinksTable {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #billingLinksTable th,
+    #billingLinksTable td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      vertical-align: top;
+    }
+    #billingLinksTable th {
+      position: sticky;
+      top: 0;
+      background: #f7f7f7;
+      z-index: 1;
+    }
+  
+
+    /* Prompt slot custom dropdown / popover */
+    .prompt-slot-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      position: relative;
+    }
+    .prompt-slot-picker {
+      position: relative;
+      flex: 0 0 auto;
+      width: fit-content;
+      min-width: 0;
+    }
+    .prompt-slot-native-select {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      width: 1px;
+      height: 1px;
+    }
+    .prompt-slot-trigger {
+      width: auto;
+      min-width: 56px;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+      color: #222;
+      cursor: pointer;
+      box-sizing: border-box;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .prompt-slot-trigger:hover,
+    .prompt-slot-trigger:focus-visible {
+      border-color: #b8c8c3;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(85, 170, 153, 0.12);
+    }
+    .prompt-slot-trigger-main {
+      min-width: 0;
+      display: block;
+      line-height: 1;
+      text-align: left;
+    }
+    .prompt-slot-trigger-slot {
+      font-size: 14px;
+      color: #3f4a46;
+    }
+    .prompt-slot-trigger-name {
+      display: none;
+    }
+    .prompt-slot-trigger-caret {
+      font-size: 13px;
+      color: #5f6b67;
+      flex: 0 0 auto;
+    }
+    .prompt-slot-picker.is-open .prompt-slot-trigger {
+      border-color: #9fbab2;
+      box-shadow: 0 0 0 3px rgba(85, 170, 153, 0.14);
+    }
+    .prompt-slot-popover {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      width: min(340px, calc(100vw - 48px));
+      overflow: visible;
+      background: #fff;
+      border: 1px solid #d7e1dd;
+      border-radius: 14px;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.14);
+      z-index: 1200;
+    }
+    .prompt-slot-popover.opens-up {
+      top: auto;
+      bottom: calc(100% + 6px);
+    }
+    .prompt-slot-popover-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 5px 10px 4px;
+      border-bottom: 1px solid #eef3f1;
+      font-size: 11px;
+      color: #60706a;
+      background: #fcfdfd;
+      line-height: 1.1;
+    }
+    .prompt-slot-popover-hint {
+      white-space: nowrap;
+    }
+    .prompt-slot-list {
+      overflow: visible;
+      padding: 1px;
+    }
+    .prompt-slot-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 4px;
+      padding: 0;
+      margin: 0;
+      border-radius: 7px;
+    }
+    .prompt-slot-item + .prompt-slot-item {
+      margin-top: 0;
+    }
+    .prompt-slot-item.is-active {
+      background: rgba(85, 170, 153, 0.09);
+    }
+    .prompt-slot-item.is-drag-over {
+      background: rgba(85, 170, 153, 0.16);
+      outline: 1px dashed rgba(85, 170, 153, 0.55);
+      outline-offset: -1px;
+    }
+    .prompt-slot-item-button {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 6px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      border-radius: 7px;
+      min-height: 24px;
+      line-height: 1.05;
+    }
+    .prompt-slot-item-button:hover,
+    .prompt-slot-item-button:focus-visible {
+      outline: none;
+      background: rgba(85, 170, 153, 0.08);
+    }
+
+    /* Full-row selection surface: match hover/click area to active-row highlight */
+    .prompt-slot-item {
+      align-items: stretch;
+    }
+    .prompt-slot-item-button {
+      width: 100%;
+      height: 100%;
+      align-self: stretch;
+      justify-self: stretch;
+      border-radius: 7px;
+    }
+    .prompt-slot-item:hover .prompt-slot-item-button,
+    .prompt-slot-item:focus-within .prompt-slot-item-button,
+    .prompt-slot-item-button:hover,
+    .prompt-slot-item-button:focus-visible {
+      outline: none;
+      background: rgba(85, 170, 153, 0.08);
+    }
+    .prompt-slot-item.is-active {
+      background: transparent;
+    }
+    .prompt-slot-item.is-active .prompt-slot-item-button {
+      background: rgba(85, 170, 153, 0.09);
+    }
+    .prompt-slot-item.is-drag-over {
+      background: transparent;
+      outline: none;
+    }
+    .prompt-slot-item.is-drag-over .prompt-slot-item-button {
+      background: rgba(85, 170, 153, 0.16);
+      outline: 1px dashed rgba(85, 170, 153, 0.55);
+      outline-offset: -1px;
+    }
+    .prompt-slot-item-title {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      width: 100%;
+      line-height: 1.05;
+    }
+    .prompt-slot-badge {
+      flex: 0 0 auto;
+      min-width: 18px;
+      color: #5f6b67;
+      font-size: 10px;
+      text-align: left;
+      line-height: 1;
+    }
+    .prompt-slot-item-name {
+      min-width: 0;
+      font-size: 18px;
+      color: #1f2a27;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.05;
+    }
+    .prompt-slot-drag-handle {
+      flex: 0 0 auto;
+      margin-right: 1px;
+      border: 0;
+      background: transparent;
+      color: #71807b;
+      cursor: grab;
+      padding: 1px 4px;
+      border-radius: 5px;
+      font-size: 11px;
+      line-height: 1;
+    }
+    .prompt-slot-drag-handle:hover,
+    .prompt-slot-drag-handle:focus-visible {
+      outline: none;
+      background: #f3f7f5;
+      color: #49655d;
+    }
+    .prompt-slot-drag-handle:active {
+      cursor: grabbing;
+    }
+    .prompt-slot-item.is-dragging {
+      opacity: 0.55;
+    }
+    @media (max-width: 720px) {
+      .prompt-slot-row {
+        flex-wrap: wrap;
+      }
+      .prompt-slot-picker {
+        min-width: 100%;
+      }
+      .prompt-slot-popover {
+        width: 100%;
+      }
+    }
+  
+    /* Strong compact override for prompt slot menu */
+    .prompt-slot-popover.compact-slots .prompt-slot-popover-header,
+    #promptSlotPopover .prompt-slot-popover-header {
+      padding: 5px 10px 4px !important;
+      font-size: 16px !important;
+      line-height: 1.0 !important;
+    }
+    .prompt-slot-popover.compact-slots .prompt-slot-list,
+    #promptSlotPopover .prompt-slot-list {
+      padding: 1px !important;
+    }
+    .prompt-slot-popover.compact-slots .prompt-slot-item,
+    #promptSlotPopover .prompt-slot-item {
+      gap: 4px !important;
+      border-radius: 7px !important;
+    }
+    .prompt-slot-popover.compact-slots .prompt-slot-item + .prompt-slot-item,
+    #promptSlotPopover .prompt-slot-item + .prompt-slot-item {
+      margin-top: 0 !important;
+    }
+    .prompt-slot-popover.compact-slots .prompt-slot-item-button,
+    #promptSlotPopover .prompt-slot-item-button {
+      gap: 5px !important;
+      padding: 2px 6px !important;
+      min-height: 24px !important;
+      border-radius: 7px !important;
+      line-height: 1.05 !important;
+    }
+    .prompt-slot-popover.compact-slots .prompt-slot-item-title,
+    #promptSlotPopover .prompt-slot-item-title {
+      gap: 5px !important;
+      line-height: 1.05 !important;
+    }
+    .prompt-slot-popover.compact-slots .prompt-slot-badge,
+    #promptSlotPopover .prompt-slot-badge {
+      min-width: 18px !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+    }
+    .prompt-slot-popover.compact-slots .prompt-slot-item-name,
+    #promptSlotPopover .prompt-slot-item-name {
+      font-size: 14px !important;
+      line-height: 1.05 !important;
+    }
+    .prompt-slot-popover.compact-slots .prompt-slot-drag-handle,
+    #promptSlotPopover .prompt-slot-drag-handle {
+      padding: 1px 4px !important;
+      font-size: 15px !important;
+      margin-right: 1px !important;
+      border-radius: 5px !important;
+    }
+
+  
+/* Prompt slot name size override */
+.prompt-slot-name {
+  font-size: 15px !important;
+  line-height: 1.15 !important;
+  font-weight: 600 !important;
+}
+
+
+    /* Live word/token counters for text fields */
+    .field-counter-wrap {
+      position: relative;
+    }
+    .field-counter-wrap.field-counter-gap {
+      padding-top: 10px;
+    }
+    .field-live-counter {
+      position: absolute;
+      right: 4px;
+      top: -14px;
+      font-size: 12px;
+      opacity: 0.6;
+      color: #333;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      z-index: 2;
+    }
+    .field-counter-wrap.field-counter-gap .field-live-counter {
+      top: 0;
+    }
+    #transcriptionCounterWrap .field-live-counter,
+    #supplementaryInfoCounterWrap .field-live-counter,
+    #secondarySourceTextCounterWrap .field-live-counter,
+    #generatedNoteCounterWrap .field-live-counter {
+      top: -4px;
+      right: 2px;
+    }
+    #customPromptCounterWrap .field-live-counter {
+      top: -14px;
+      right: 2px;
+    }
+
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<link rel="stylesheet" href="./nordlys-workspace.css">
+</head>
+<body>
+  <header class="nordlys-header"><a href="./index.html" class="nordlys-brand">N<span>Nordlys Journal</span></a><span>Arbeidsrom <small>· utviklingsversjon 0.1</small></span><a href="./veiledning.html" target="_blank" rel="noopener">Veiledning</a></header>
+  <div class="grid-container">
+    <aside
+      id="noteHistorySidebar"
+      class="note-history-sidebar"
+      aria-labelledby="noteHistoryTitle"
+    >
+      <div class="note-history-header">
+        <div class="note-history-header-row">
+          <button
+            id="noteHistoryCollapseButton"
+            class="note-history-collapse"
+            type="button"
+            aria-controls="noteHistoryContent"
+            aria-expanded="true"
+            aria-label="Collapse history column"
+            title="Collapse history column"
+          >
+            ‹
+          </button>
+          <h2 id="noteHistoryTitle" class="note-history-title">History</h2>
+          <span
+            id="noteHistoryHelp"
+            class="help-tip note-history-help"
+            tabindex="0"
+            aria-label="Note history help"
+          >
+            ?
+            <span id="noteHistoryTooltip" class="help-tip-content" role="tooltip">
+              Shows the 30 most recent generated notes in this tab. Select an item to view its transcript and note. History remains after refresh and is removed when the tab session ends.
+            </span>
+          </span>
+          <button id="noteHistoryClearButton" class="note-history-clear" type="button">
+            Clear
+          </button>
+        </div>
+      </div>
+      <div id="noteHistoryContent" class="note-history-scroll">
+        <div id="noteHistoryList" class="note-history-list" aria-live="polite"></div>
+        <p id="noteHistoryEmpty" class="note-history-empty">No generated notes yet.</p>
+      </div>
+    </aside>
+    <!-- Main Content (center column) -->
+    <main class="main-content">
+      <!-- Top Bar inside Main Content -->
+<!-- Top Bar inside Main Content -->
+<div class="top-bar">
+  <!-- Back to frontpage button stays on the far left -->
+  <button id="backToHomeButton" type="button">Back to frontpage</button>
+<script>
+  document.getElementById('backToHomeButton').addEventListener('click', () => {
+    const loc = window.location;
+    const newPath = loc.pathname.replace(/\/[^\/]*$/, '/index.html'); // keep /Whisper-dev/
+    window.location.href = loc.origin + newPath + loc.search + loc.hash;
+  });
+</script>  <!-- Center cluster: Read first + Guide | News | Clinical tools -->
+  <div class="top-bar-center">
+    <!-- Group for "Read first! ➔" and Guide button -->
+    <div class="mid-controls" style="display: flex; align-items: center;">
+      <span id="read-first-text" style="font-size: 28px; color: black; margin-right: 10px;">Read first! ➔</span>
+      <button id="btnGuide" type="button">Guide</button>
+    </div>
+
+    <!-- NEWS button (equal spacing between Guide area and Clinical tools) -->
+    <div class="news-button-wrap">
+      <button id="btnNews" type="button">News</button>
+      <span
+        id="newsLatestBadge"
+        class="news-latest-badge"
+        title="Shows the newest status/update entry date"
+        aria-live="polite"
+      >
+        Loading…
+      </span>
+    </div>
+
+    <!-- Medical calculator picker (opens selected HTML in a new tab) -->
+    <div id="medical-calc-container">
+      <label id="medicalCalcLabel" for="medicalCalcSelect">Kliniske verktøy:</label>
+      <select id="medicalCalcSelect" aria-label="Medical calculator">
+        <option value="" selected>Select…</option>
+        <option value="./kliniske_verktøy/BMI_kalkulator.html">BMI / KMI</option>
+        <option value="./kliniske_verktøy/growth_charts_no_upload.html">Vektskurver WHO barn 0-19 år</option>
+        <option value="./kliniske_verktøy/omeq.html">OMEQ (morfinekvivalenter)</option>
+        <option value="./kliniske_verktøy/terminkalkulator.html">Terminkalkulator</option>
+        <option value="./kliniske_verktøy/SUKK.html">SUKK test - Svangerskapskvalme</option>
+        <option value="./kliniske_verktøy/norrisk2.html">NORRISK 2</option>
+        <option value="./kliniske_verktøy/chadvasc.html">CHA₂DS₂-VASc</option>
+        <option value="./kliniske_verktøy/Fri_testosteron_index.html">Fri androgen-indeks / fritt testosteron</option>
+      </select>
+      <button id="medicalCalcOpenBtn" type="button" disabled>Open</button>
+    </div>
+  </div>
+<!-- Keep the existing center controls in place; Prices sits between Clinical Tools and language. -->
+  <div class="top-bar-right">
+    <button id="btnPrices" type="button" aria-controls="pricesView" aria-haspopup="dialog">Prices</button>
+    <div id="lang-container-transcribe">
+      <img src="language-icon.png" alt="Language Icon" id="lang-icon-transcribe" />
+      <select id="lang-select-transcribe">
+        <option value="en">English</option>
+        <option value="no">Norsk</option>
+        <option value="sv">Svenska</option>
+        <option value="de">Deutsch</option>
+        <option value="fr">Français</option>
+        <option value="it">Italiano</option>
+      </select>
+    </div>
+  </div>
+
+
+</div>
+      <!-- Recording Area -->
+      <div class="recording-area">
+<div class="recording-header">
+  <h3 id="recordingAreaTitle">Recording Area</h3>
+  <a id="openaiUsageLink" href="#" role="button" aria-controls="billingLinksView">
+    Cost usage overview
+  </a>
+ </div>
+        <!-- Provider row moved here (between header and timer) -->
+        <div class="transcribe-provider-row">
+          <!-- Transcription Provider selector -->
+          <div id="provider-container">
+            <label for="transcribeProvider" id="providerLabel">Provider:</label>
+            <select id="transcribeProvider">
+              <option value="openai">OpenAI</option>
+              <option value="soniox">Soniox</option>
+              <option value="soniox_rt">Soniox (real-time)</option>
+              <option value="voxtral">Mistral (Voxtral Mini Transcribe)</option>
+            </select>
+          </div>
+          <!-- Soniox Speaker Labels selector (shown only for Soniox) -->
+          <div id="soniox-speaker-labels-container" style="display:none;">
+            <!-- "Spk" is short + fairly universal in audio UIs; tooltip provides clarity without i18n -->
+            <label for="sonioxSpeakerLabels" id="sonioxSpeakerLabelsLabel" title="Speaker labels">Speaker labels:</label>
+            <select id="sonioxSpeakerLabels" aria-label="Speaker labels">
+              <option value="off" selected>Off</option>
+              <option value="on">On</option>
+            </select>
+          </div>
+
+
+          <!-- Soniox Region selector (shown only for Soniox providers) -->
+          <div id="soniox-region-container" style="display:none;">
+            <label for="sonioxRegion" id="sonioxRegionLabel">Region:</label>
+            <select id="sonioxRegion">
+              <option value="us">US</option>
+              <option value="eu">EU (GDPR Compliant)</option>
+            </select>
+          </div>
+
+          <!-- EU note (shown only when Region = EU) -->
+          <div id="soniox-region-note" style="display:none;">
+            (EU endpoint requires
+            <a href="https://soniox.com/docs/stt/data-residency"
+               target="_blank" rel="noopener noreferrer">EU API key</a> from SONIOX)
+          </div>
+        </div>
+
+        <div id="recordTimer" class="timer">Recording Timer: 0 sec</div>
+        <!-- Completion timer + Copy/Clear buttons on same row -->
+        <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
+          <div id="transcribeTimer" class="timer" style="margin-bottom: 0;">Completion Timer: 0 sec</div>
+          <div style="display:flex; align-items:center; gap: 6px;">
+            <button
+              id="toggleSecondaryNoteButton"
+              type="button"
+              aria-expanded="false"
+              aria-controls="secondaryNotePane"
+              style="
+                padding: 4px 10px;
+                font-size: 12px;
+                border-radius: 6px;
+                background-color: #5a9;
+              "
+            >
+              Show secondary note generator
+            </button>
+            <button
+              id="copyTranscriptionButton"
+              type="button"
+              aria-label="Copy transcript"
+              style="
+                padding: 4px 10px;
+                font-size: 12px;
+                border-radius: 6px;
+                background-color: #5a9;
+              "
+            >
+              Copy
+            </button>
+            <button
+              id="clearTranscriptionButton"
+              type="button"
+              style="
+                padding: 4px 10px;
+                font-size: 12px;
+                border-radius: 6px;
+                background-color: #5a9;
+              "
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+        <div id="transcriptSecondaryLayout" class="transcript-secondary-layout">
+          <div class="transcript-pane">
+            <div id="transcriptionCounterWrap" class="field-counter-wrap field-counter-gap">
+              <div id="transcriptionLiveCounter" class="field-live-counter" aria-live="polite">0 words · 0 tokens</div>
+              <textarea
+                id="transcription"
+                placeholder="Transcription result will appear here."
+                style="margin-bottom: 6px;"
+                autocomplete="off"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Secondary Note Generator (hidden by default; toggled by the
+               button next to the transcript Copy button). Hiding this pane
+               only hides it visually — no text/settings are cleared. -->
+          <aside
+            id="secondaryNotePane"
+            class="secondary-note-pane"
+            hidden
+            aria-hidden="true"
+          >
+            <div class="secondary-note-title" id="secondaryNoteTitle">Secondary Note Generator</div>
+
+            <div id="secondarySourceTextCounterWrap" class="field-counter-wrap field-counter-gap">
+              <div id="secondarySourceTextLiveCounter" class="field-live-counter" aria-live="polite">0 words · 0 tokens</div>
+              <textarea
+                id="secondarySourceText"
+                placeholder="Paste or type source text here..."
+                autocomplete="off"
+                aria-label="Secondary source text"
+              ></textarea>
+            </div>
+
+            <div class="secondary-source-date-actions">
+              <div
+                id="secondarySourceDateToggleWrap"
+                class="auto-clear-toggle"
+                aria-label="Keep today's date in source text"
+              >
+                <label class="switch" title="Keep date">
+                  <input id="secondarySourceDateToggle" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+                <span class="auto-clear-label" id="secondarySourceDateToggleLabel">Date</span>
+              </div>
+              <span
+                id="secondarySourceDateTooltipContainer"
+                class="help-tip help-tip-left"
+                style="margin-left:0; margin-right:2px;"
+                tabindex="0"
+                aria-label="Source text date help"
+              >
+                ?
+                <span id="secondarySourceDateTooltipText" class="help-tip-content" role="tooltip">
+                  When ON: Keeps the line "Dagens dato er DD.MM.YYYY" at the top of the source text and restores it after refresh. When OFF: Removes that date line from the source text.
+                </span>
+              </span>
+            </div>
+
+            <!-- Independent generation settings (selects populated by JS from
+                 the shared provider registry). -->
+            <div class="secondary-note-row">
+              <span class="secondary-inline-control">
+                <label for="secondaryProvider" id="secondaryProviderLabel">Provider:</label>
+                <select id="secondaryProvider"></select>
+                <span id="secondaryFixedModelPrice" class="model-price-label" hidden></span>
+              </span>
+              <span class="secondary-inline-control" id="secondaryModeContainer" style="display:none;">
+                <label for="secondaryMode" id="secondaryModeLabel">Mode:</label>
+                <select id="secondaryMode"></select>
+              </span>
+              <span class="secondary-inline-control" id="secondaryOpenaiModelContainer" style="display:none;">
+                <label for="secondaryOpenaiModel" id="secondaryOpenaiModelLabel">Model:</label>
+                <select id="secondaryOpenaiModel"></select>
+                <span id="secondaryOpenaiModelPrice" class="model-price-label"></span>
+              </span>
+              <span class="secondary-inline-control" id="secondaryBedrockModelContainer" style="display:none;">
+                <label for="secondaryBedrockModel" id="secondaryBedrockModelLabel">Model:</label>
+                <select id="secondaryBedrockModel"></select>
+                <span id="secondaryBedrockModelPrice" class="model-price-label"></span>
+              </span>
+              <span class="secondary-inline-control" id="secondaryRequestyModelContainer" style="display:none;">
+                <label for="secondaryRequestyModel" id="secondaryRequestyModelLabel">Model:</label>
+                <select id="secondaryRequestyModel"></select>
+                <span id="secondaryRequestyModelPrice" class="model-price-label"></span>
+              </span>
+            </div>
+            <div class="secondary-note-row">
+              <span class="secondary-inline-control" id="secondaryOpenaiReasoningContainer" style="display:none;">
+                <label for="secondaryOpenaiReasoning" id="secondaryOpenaiReasoningLabel">Reasoning effort:</label>
+                <select id="secondaryOpenaiReasoning"></select>
+              </span>
+              <span class="secondary-inline-control" id="secondaryNanoReasoningContainer" style="display:none;">
+                <label for="secondaryNanoReasoning" id="secondaryNanoReasoningLabel">Reasoning effort:</label>
+                <select id="secondaryNanoReasoning"></select>
+              </span>
+            </div>
+
+            <!-- Shared saved prompt slots — independent selection.
+                 Prompt texts are edited/saved only in the main Custom Prompt
+                 area; this dropdown always reads the latest saved content. -->
+            <div class="secondary-note-row">
+              <span class="secondary-inline-control">
+                <label for="secondaryPromptSelect" id="secondaryPromptLabel">Prompt:</label>
+                <select id="secondaryPromptSelect"></select>
+              </span>
+            </div>
+
+            <div class="secondary-note-row">
+              <button id="secondaryGenerateButton" type="button">Generate Note</button>
+              <button id="secondaryAbortButton" type="button" disabled aria-disabled="true">Abort</button>
+            </div>
+
+            <div class="secondary-note-row" style="justify-content: space-between;">
+              <div id="secondaryNoteTimer" class="timer" style="margin-bottom:0;">Note Generation Timer: 0 sec</div>
+              <span class="secondary-inline-control" style="gap: 6px;">
+                <button
+                  id="secondaryCopyNoteButton"
+                  type="button"
+                  aria-label="Copy secondary generated note"
+                >
+                  Copy
+                </button>
+                <button
+                  id="secondaryPushToSupplementaryButton"
+                  type="button"
+                  aria-label="Copy secondary generated note to Supplementary Information"
+                >
+                  Insert
+                </button>
+              </span>
+            </div>
+            <div id="secondaryNoteStatus" aria-live="polite"></div>
+            <div id="secondaryNoteUsageCost"></div>
+
+            <textarea
+              id="secondaryGeneratedNote"
+              placeholder="Generated note will appear here..."
+              autocomplete="off"
+              aria-label="Secondary generated note"
+            ></textarea>
+
+            <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+              <label class="secondary-auto-transfer" for="secondaryAutoTransferToggle">
+                <input id="secondaryAutoTransferToggle" type="checkbox" />
+                <span id="secondaryAutoTransferLabel">Automatically copy result to Supplementary Information</span>
+              </label>
+              <label class="secondary-auto-transfer" for="secondaryClearOnGenerateToggle">
+                <input id="secondaryClearOnGenerateToggle" type="checkbox" />
+                <span id="secondaryClearOnGenerateLabel">Clear Supplementary Information on Generate</span>
+              </label>
+            </div>
+          </aside>
+        </div>
+        <!-- Supplementary / Redactor toolbar -->
+        <div class="supp-toolbar">
+          <!-- Left side: Auto clear toggle + tooltip -->
+          <div class="supp-row-left">
+            <div class="auto-clear-toggle" aria-label="Auto clear supplementary information">
+              <label class="switch" title="Auto clear">
+                <input id="autoClearSupplementaryToggle" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+              <span class="auto-clear-label">Auto clear</span>
+            </div>
+            <span class="help-tip" tabindex="0" aria-label="Auto clear help">
+              ?
+              <span class="help-tip-content" role="tooltip">
+                <strong>Toggled on:</strong><br/>
+                The Supplementary information field is cleared and reset to its default size when you start a new recording.<br/><br/>
+                <strong>Toggled off:</strong><br/>
+                Starting a new recording does not change the Supplementary information field.
+              </span>
+            </span>
+          </div>
+
+          <!-- Right side: Redactor toggle + supplementary clear -->
+          <div class="supp-toolbar-right">
+            <button
+              id="toggleRedactorButton"
+              type="button"
+              aria-expanded="false"
+              aria-controls="redactorPane"
+              style="
+                padding: 4px 10px;
+                font-size: 12px;
+                border-radius: 6px;
+                background-color: #5a9;
+              "
+            >
+              Show redactor
+            </button>
+            <button
+              id="clearSupplementaryButton"
+              type="button"
+              style="
+                padding: 4px 10px;
+                font-size: 12px;
+                border-radius: 6px;
+                background-color: #5a9;
+              "
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <div id="supplementaryRedactorLayout" class="supplementary-redactor-layout">
+          <div class="supplementary-pane">
+            <!-- Supplementary field (NO label above) -->
+            <div id="supplementaryInfoCounterWrap" class="field-counter-wrap field-counter-gap">
+              <div id="supplementaryInfoLiveCounter" class="field-live-counter" aria-live="polite">0 words · 0 tokens</div>
+              <textarea
+                id="supplementaryInfo"
+                placeholder="Supplementary information (optional)"></textarea>
+            </div>
+            <div class="supp-actions" style="display:flex; justify-content:flex-end; align-items:center; gap: 6px; margin-top: 6px;">
+              <div id="supplementaryDateToggleWrap" class="auto-clear-toggle" aria-label="Keep today's date in supplementary information" style="margin-right: 2px;">
+                <label class="switch" title="Keep date">
+                  <input id="supplementaryDateToggle" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+                <span class="auto-clear-label" id="supplementaryDateToggleLabel">Date</span>
+              </div>
+              <span
+                id="supplementaryDateTooltipContainer"
+                class="help-tip help-tip-left"
+                style="margin-left:0; margin-right:2px;"
+                tabindex="0"
+                aria-label="Supplementary date help"
+              >
+                ?
+                <span id="supplementaryDateTooltipText" class="help-tip-content" role="tooltip">
+                  <strong>When ON:</strong><br/>
+                  Keeps today’s date at the top of Supplementary information and restores it after refresh.<br/><br/>
+                  <strong>When OFF:</strong><br/>
+                  Removes that date line from Supplementary information.
+                </span>
+              </span>
+            </div>
+          </div>
+
+          
+          <aside
+            id="redactorPane"
+            class="redactor-pane"
+            hidden
+            aria-hidden="true"
+          >
+            <div class="redactor-header">
+              <div class="redactor-title" id="redactorTitle">Redactor</div>
+            </div>
+            <div class="redactor-help" id="redactorHelp">
+              Add one term per line. General and specific terms are both used when you click Redact, which will redact these terms from both the transcript output field and the supplementary information field. General terms stay while this tab remains open, but clear when the tab is closed.
+            </div>
+
+            <div class="redactor-section">
+              <div class="redactor-section-title" id="redactorOcrSectionTitle">Screenshot → OCR</div>
+              <div class="redactor-mini-help" id="redactorOcrMiniHelp">
+                Use Windows + Shift + S, then click <strong>Paste image</strong>. You can also press <strong>Ctrl + V</strong> while the image frame is focused, or upload an image file.
+              </div>
+              <div class="redactor-image-toolbar">
+                <button id="pasteRedactorImageButton" type="button" class="redactor-button">Paste image</button>
+                <label class="redactor-file-button" for="redactorImageUpload" id="redactorImageUploadLabel">
+                  <span id="redactorImageUploadLabelText">Upload image</span>
+                  <input id="redactorImageUpload" type="file" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" />
+                </label>
+                <button id="clearRedactorImageButton" type="button" class="redactor-button">Clear image</button>
+                <button id="fetchRedactorImageTextButton" type="button" class="redactor-button">Fetch OCR → Specific</button>
+                <button id="fetchRedactorRawTextButton" type="button" class="redactor-button">Fetch OCR → Raw text</button>
+              </div>
+              <div id="redactorImageFrame" class="redactor-image-frame" tabindex="0" aria-label="OCR image preview. Paste an image here with Ctrl plus V.">
+                <img id="redactorImagePreview" class="redactor-image-preview" alt="OCR screenshot preview" hidden />
+                <div id="redactorImagePlaceholder" class="redactor-image-placeholder">
+                  No image loaded yet. Paste a screenshot here or upload an image.
+                </div>
+              </div>
+            </div>
+
+            <div class="redactor-section">
+              <div class="redactor-fields-grid">
+                <div class="redactor-field-group">
+                  <label for="redactorGeneralTerms" id="redactorGeneralTermsLabel">General terms</label>
+                  <textarea
+                    id="redactorGeneralTerms"
+                    class="compact"
+                    placeholder="General terms (one per line)&#10;e.g. hospital&#10;Name"
+                  ></textarea>
+                  <div class="redactor-inline-actions">
+                    <button id="uploadGeneralTermsButton" type="button" class="redactor-button">Import General.txt</button>
+                    <input id="generalTermsFileInput" type="file" accept=".txt,text/plain" hidden />
+                    <button id="exportGeneralTermsButton" type="button" class="redactor-button">Export General.txt</button>
+                    <button id="clearGeneralTermsButton" type="button" class="redactor-button">Clear general</button>
+                  </div>
+                </div>
+
+                <div class="redactor-field-group">
+                  <label for="redactorTerms" id="redactorSpecificTermsLabel">Specific terms</label>
+                  <textarea
+                    id="redactorTerms"
+                    class="large"
+                    placeholder="Specific terms (one per line)&#10;Ola Nordmann&#10;12345678"
+                  ></textarea>
+                  <div class="redactor-inline-actions">
+                    <button id="clearRedactorButton" type="button" class="redactor-button">Clear specific</button>
+                    <button id="applyRedactionButton" type="button" class="redactor-button">Redact</button>
+                    <button id="downloadTranscriptButton" type="button" class="redactor-button">Download transcript</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="redactor-field-group" style="margin-top: 12px;">
+                <label for="redactorOcrRawOutput" id="redactorOcrRawOutputLabel">OCR raw text</label>
+                <textarea
+                  id="redactorOcrRawOutput"
+                  class="compact"
+                  placeholder="Raw OCR text appears here without formatting or cleanup. Useful when you just want to copy the transcription."
+                ></textarea>
+                <div class="redactor-inline-actions">
+                  <button id="copyRedactorRawOutputButton" type="button" class="redactor-button">Copy raw</button>
+                  <button id="clearRedactorRawOutputButton" type="button" class="redactor-button">Clear raw</button>
+                </div>
+              </div>
+
+              <div style="margin-top: 12px;">
+                <div class="redactor-birthdate-label" id="redactorBirthdateLabel">Birthdate helper</div>
+                <div class="redactor-birthdate-row">
+                  <input
+                    id="redactorBirthdateInput"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="10"
+                    placeholder="DDMMYY, e.g. 180289"
+                  />
+                  <button id="addBirthdateFormatsButton" type="button" class="redactor-button">Add dates</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="redactorStatus" class="redactor-status" aria-live="polite"></div>
+          </aside>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <button id="startButton">Start</button>
+          <button id="stopButton" disabled>Stop</button>
+          <button id="pauseResumeButton" disabled>Pause Recording</button>
+          <button id="abortButton" type="button" disabled title="Discard the current recording without finishing transcription">Abort</button>
+
+          <!-- Shared auto-copy mode -->
+          <div id="autoCopyModeContainer" style="display:inline-flex; align-items:center; gap:6px;">
+            <label for="autoCopyModeSelect" id="autoCopyModeLabel" style="font-size:14px;">Auto-copy</label>
+            <select id="autoCopyModeSelect" aria-label="Auto-copy mode" style="padding:4px 8px; font-size:13px; border-radius:6px;">
+              <option value="off" selected>Off</option>
+              <option value="transcript">Transcript</option>
+              <option value="note">Note</option>
+            </select>
+          </div>
+
+          <span id="autoCopyModeTooltipContainer" class="help-tip" tabindex="0" aria-label="Auto-copy help">
+            ?
+            <span id="autoCopyModeTooltipText" class="help-tip-content" role="tooltip">
+              <strong>Off:</strong><br/>
+              Nothing is copied automatically.<br/><br/>
+              <strong>Transcript:</strong><br/>
+              Automatically copies the finished transcript.<br/><br/>
+              <strong>Note:</strong><br/>
+              Automatically copies the finished generated note.
+            </span>
+          </span>
+        </div>
+        <div id="statusMessage">Welcome! Click "Start Recording" to begin.</div>
+      </div>
+      <!-- Note Generation & Custom Prompt -->
+      <div class="bottom-half">
+      <div class="column">
+          <div class="bottom-section-header">
+            <h3 id="noteGenerationTitle">Note Generation</h3>
+            <span class="bottom-section-header-spacer" aria-hidden="true"></span>
+          </div>
+          <!-- Phase 3: Note Provider selector (module switch only; both use OpenAI key) -->
+          <div id="note-provider-container" style="display:flex; align-items:center; gap:8px; margin: 6px 0 6px; flex-wrap:wrap;">
+            <label for="noteProvider" id="noteProviderLabel">Provider:</label>
+            <select id="noteProvider">
+              <option value="openai">OpenAI</option>
+              <option value="mistral">Mistral</option>
+              <option value="aws-bedrock" selected>AWS Bedrock</option>
+              <option value="requesty">Requesty</option> <!-- GDPR: EU router + EU-region models -->
+            </select>
+            <span id="fixedNoteModelPrice" class="model-price-label" hidden></span>
+            <div id="note-provider-mode-container" style="display:none; align-items:center; gap:8px;">
+              <label for="noteProviderMode" id="noteProviderModeLabel">Mode:</label>
+              <select id="noteProviderMode">
+                <option value="streaming" selected>streaming</option>
+                <option value="non-streaming">non-streaming</option>
+              </select>
+            </div>
+            <!-- OpenAI model selector (shown only when Provider = OpenAI) -->
+            <div id="openai-model-container"
+                 style="display:none; align-items:center; gap:6px; margin-left:8px;">
+              <label for="openaiModel" id="openaiModelLabel">Model:</label>
+              <select id="openaiModel">
+                <option value="gpt-5.6-sol" selected>GPT-5.6 Sol</option>
+                <option value="gpt-5.6-terra">GPT-5.6 Terra</option>
+                <option value="gpt-5.6-luna">GPT-5.6 Luna</option>
+                <option value="gpt-5-nano">GPT-5 Nano</option>
+              </select>
+              <span id="openaiModelPrice" class="model-price-label"></span>
+            </div>
+
+            <!-- AWS Bedrock model selector (shown only when Note Provider = AWS Bedrock) -->
+            <div id="bedrock-model-container"
+                 style="display:none; align-items:center; gap:6px; margin-left:8px;">
+              <label for="bedrockModel" id="bedrockModelLabel">Model:</label>
+              <select id="bedrockModel">
+               <option value="haiku-4-5">Claude Haiku 4.5</option>
+               <option value="sonnet-4-5">Claude Sonnet 4.5</option>
+               <option value="sonnet-4-6">Claude Sonnet 4.6</option>
+               <option value="opus-4-5" selected>Claude Opus 4.5</option>
+               <option value="opus-4-6">Claude Opus 4.6</option>
+               <option value="opus-4-7">Claude Opus 4.7</option>
+                
+               
+              </select>
+              <span id="bedrockModelPrice" class="model-price-label"></span>
+            </div>
+
+            <!-- Requesty model selector (shown only when Note Provider = Requesty) -->
+            <div id="requesty-model-container"
+                 style="display:none; align-items:center; gap:6px; margin-left:8px;">
+              <label for="requestyModel" id="requestyModelLabel">Model:</label>
+              <select id="requestyModel">
+               <option value="claude-opus-5-5" selected>Claude Opus 5.5</option>
+               <option value="claude-sonnet-5">Claude Sonnet 5</option>
+               <option value="gpt-6-sol">GPT-6 Sol</option>
+               <option value="gpt-6-luna">GPT-6 Luna</option>
+               <option value="gpt-5.6-sol">GPT-5.6 Sol</option>
+               <option value="gpt-5.6-terra">GPT-5.6 Terra</option>
+               <option value="gpt-5.6-luna">GPT-5.6 Luna</option>
+               <option value="gpt-5.5">GPT-5.5</option>
+               <option value="gpt-5-nano">GPT-5 Nano</option>
+               <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
+               <option value="deepseek-v4-pro-0813">DeepSeek V4 Pro</option>
+               <option value="deepseek-v4.1-flash">DeepSeek V4.1 Flash</option>
+               <option value="kimi-k3">Kimi K3</option>
+              </select>
+              <span id="requestyModelPrice" class="model-price-label"></span>
+            </div>
+
+            <div id="noteAutoClearToggleWrap" class="auto-clear-toggle" style="margin-left:auto;" aria-label="Auto clear generated note">
+              <label class="switch" title="Auto clear">
+                <input id="autoClearNoteToggle" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+              <span class="auto-clear-label" id="autoClearNoteToggleLabel">Auto clear</span>
+            </div>
+            <span id="autoClearNoteTooltipContainer" class="help-tip" tabindex="0" aria-label="Auto clear note help">
+              ?
+              <span id="autoClearNoteTooltipText" class="help-tip-content" role="tooltip">
+                <strong>When ON:</strong><br/>
+                The generated note field is cleared when you start a new recording.<br/><br/>
+                <strong>When OFF:</strong><br/>
+                Starting a new recording does not change the generated note field.
+              </span>
+            </span>
+          </div>
+
+          <!-- OpenAI reasoning effort selector (shown only for OpenAI GPT-5 note providers) -->
+          <div id="gpt5-reasoning-container"
+               style="display:none; align-items:center; gap:8px; margin: 0 0 10px;">
+            <label for="gpt5Reasoning" id="gpt5ReasoningLabel">Reasoning effort:</label>
+            <select id="gpt5Reasoning">
+              <option value="none">None</option>
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="xhigh">X-high</option>
+              <option value="max">Max</option>
+            </select>
+          </div>
+
+          <!-- Model-specific Requesty reasoning selector. Its options are
+               hydrated for GPT-5 Nano, the selected GPT-5.6 tier, GPT-6 Luna/Sol,
+               Gemini 3.8 Flash, DeepSeek V4 Pro/V4.1 Flash, or Kimi K3. -->
+          <div id="requesty-nano-reasoning-container"
+               style="display:none; align-items:center; gap:8px; margin: 0 0 10px;">
+            <label for="requestyNanoReasoning" id="requestyNanoReasoningLabel">Reasoning effort:</label>
+            <select id="requestyNanoReasoning">
+              <option value="minimal">Minimal</option>
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
+          <div id="noteActionButtons" style="display:flex; align-items:center; gap:8px; margin-bottom: 6px;">
+          <button id="generateNoteButton" type="button">Generate Note</button>
+          <button
+            id="abortNoteButton"
+            type="button"
+            disabled
+            aria-disabled="true"
+            title="Abort the current note generation and allow a new note to be generated"
+          >
+            Abort Note
+          </button>
+          </div>
+          <!-- Note timer + Copy button on the same row -->
+          <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px;">
+            <div id="noteTimer" class="timer" style="margin-bottom: 0;">
+              <span id="noteTimerValue">Note Generation Timer: 0 sec</span>
+              <span id="noteTimerStatus" class="timer-status"></span>
+            </div>
+            <div style="display:inline-flex; align-items:center; justify-content:flex-end; gap:6px; flex-shrink:0; margin-left:auto; white-space:nowrap;">
+              <button
+                id="copyNoteButton"
+                type="button"
+                aria-label="Copy generated note"
+                style="
+                  padding: 4px 10px;
+                  font-size: 12px;
+                  border-radius: 6px;
+                  background-color: #5a9;
+                  margin: 0;
+                "
+              >
+                Copy
+              </button>
+              <button
+                id="openMiniPanelButton"
+                type="button"
+                aria-label="Open mini panel"
+                title="Open floating mini control panel"
+                style="
+                  padding: 4px 10px;
+                  font-size: 12px;
+                  border-radius: 6px;
+                  background-color: #5a9;
+                  margin: 0;
+                "
+              >
+                Mini-panel
+              </button>
+              <div id="autoGenerateToggleContainer" class="auto-clear-toggle" aria-label="Auto-generate note on transcription finish" style="margin:0;">
+                <label class="switch" title="Auto-generate">
+                  <input id="autoGenerateToggle" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+                <span class="auto-clear-label" id="autoGenerateToggleLabel">Auto-generate</span>
+              </div>
+              <span id="autoGenerateTooltipContainer" class="help-tip help-tip-left" tabindex="0" aria-label="Auto-generate help" style="margin-left:0;">
+                ?
+                <span id="autoGenerateTooltipText" class="help-tip-content" role="tooltip">
+                  <strong>When ON:</strong><br/>
+                  Automatically generates a note when transcription finishes.<br/><br/>
+                  <strong>When OFF:</strong><br/>
+                  You generate notes manually using the Generate Note button.
+                </span>
+              </span>
+            </div>
+          </div>
+        <div id="noteTimerStatusBelow" class="timer-status-below"></div>
+        <!-- Separate (non-timer) UI line for tokens/cost so it never gets overwritten by #noteTimer.innerText -->
+        <div id="noteUsageCost" class="note-usage-cost"></div>
+          <div id="generatedNoteCounterWrap" class="field-counter-wrap field-counter-gap">
+            <div id="generatedNoteLiveCounter" class="field-live-counter" aria-live="polite">0 words · 0 tokens</div>
+            <textarea id="generatedNote" placeholder="Generated note will appear here..." autocomplete="off"></textarea>
+          </div>
+        </div>
+        <div class="column">
+          <div class="bottom-section-header custom-prompt-header">
+            <h3 id="customPromptTitle">Custom Prompt</h3>
+
+            <label class="prompt-include-toggle">
+              <input id="includePromptToggle" type="checkbox" checked />
+              <span id="includePromptToggleLabel">Use prompt</span>
+              <span class="help-tip help-tip-left" tabindex="0" aria-label="Prompt toggle help">
+                ?
+                <span id="includePromptToggleTooltip" class="help-tip-content" role="tooltip">
+                  When enabled, your custom prompt is included in note generation. Turn it off to generate notes without using the prompt text.
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <div class="prompt-backup-row">
+            <div class="prompt-backup-actions">
+              <button id="promptExportBtn" type="button">Export</button>
+              <button id="promptImportBtn" type="button">Import</button>
+              <input id="promptImportFile" type="file" accept="application/json" style="display:none;">
+            </div>
+          </div>
+          <p id="promptBackupStatus" aria-live="polite"></p>
+
+          <div id="promptBackupModalBackdrop" aria-hidden="true">
+            <div
+              id="promptBackupModal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="promptBackupModalTitle"
+            >
+              <div class="prompt-backup-modal__header">
+                <h2 id="promptBackupModalTitle">Export prompts</h2>
+                <button id="promptBackupModalClose" type="button" aria-label="Close">×</button>
+              </div>
+              <div id="promptBackupChoiceStep">
+                <div id="promptBackupChoiceNotice" class="prompt-backup-modal__notice"></div>
+
+                <button id="promptBackupJsonChoice" type="button" class="prompt-backup-modal__option">
+                  Export as JSON file
+                </button>
+                <p id="promptBackupJsonHelp" class="prompt-backup-modal__help"></p>
+
+                <button id="promptBackupOneDriveChoice" type="button" class="prompt-backup-modal__option">
+                  Export to Microsoft OneDrive
+                </button>
+                <p id="promptBackupOneDriveHelp" class="prompt-backup-modal__help"></p>
+
+                <button id="promptBackupGoogleDriveChoice" type="button" class="prompt-backup-modal__option">
+                  Export to Google Drive
+                </button>
+                <p id="promptBackupGoogleDriveHelp" class="prompt-backup-modal__help"></p>
+              </div>
+
+              <div id="promptBackupCloudStep" style="display:none">
+                <div id="promptBackupCloudNotice" class="prompt-backup-modal__notice"></div>
+                <label id="promptBackupPasswordLabel" class="prompt-backup-modal__field-label" for="promptBackupPassword">
+                  Encryption password
+                </label>
+                <input
+                  id="promptBackupPassword"
+                  class="prompt-backup-modal__password"
+                  type="password"
+                  autocomplete="current-password"
+                >
+                <div id="promptBackupPasswordConfirmWrap">
+                  <label id="promptBackupPasswordConfirmLabel" class="prompt-backup-modal__field-label" for="promptBackupPasswordConfirm">
+                    Repeat password
+                  </label>
+                  <input
+                    id="promptBackupPasswordConfirm"
+                    class="prompt-backup-modal__password"
+                    type="password"
+                    autocomplete="new-password"
+                  >
+                </div>
+                <div class="prompt-backup-modal__actions">
+                  <button id="promptBackupCloudAction" type="button">Save</button>
+                  <button id="promptBackupCloudBack" class="prompt-backup-modal__back" type="button">Back</button>
+                </div>
+              </div>
+
+              <p id="promptBackupModalStatus" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="prompt-slot-row">
+            <div class="prompt-slot-picker" id="promptSlotPicker">
+              <select
+                id="promptSlot"
+                aria-label="Prompt slot"
+                class="prompt-slot-native-select"
+              >
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+              </select>
+
+              <button
+                id="promptSlotTrigger"
+                type="button"
+                class="prompt-slot-trigger"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="promptSlotPopover"
+              >
+                <span class="prompt-slot-trigger-main">
+                  <span id="promptSlotTriggerSlot" class="prompt-slot-trigger-slot">1.</span>
+                  <span id="promptSlotTriggerName" class="prompt-slot-trigger-name"></span>
+                </span>
+                <span class="prompt-slot-trigger-caret" aria-hidden="true">▾</span>
+              </button>
+
+              <div
+                id="promptSlotPopover"
+                class="prompt-slot-popover"
+                role="dialog"
+                aria-label="Prompt slots"
+                hidden
+              >
+                <div class="prompt-slot-popover-header">
+                  <span>Prompt slots</span>
+                  <span class="prompt-slot-popover-hint">Drag handle to reorder</span>
+                </div>
+                <div
+                  id="promptSlotList"
+                  class="prompt-slot-list"
+                  role="listbox"
+                  aria-label="Prompt slots"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Per-slot name (stored locally; shown in slot picker) -->
+            <input
+              id="promptSlotName"
+              type="text"
+              placeholder="Prompt label (optional)"
+              aria-label="Prompt slot name"
+              style="
+                flex: 1;
+                min-width: 160px;
+                padding: 6px 10px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                font-size: 14px;
+                font-family: inherit;
+                box-sizing: border-box;
+              "
+            />
+
+            <div style="display:flex; align-items:center; gap: 6px; margin-left: auto;">
+              <button
+                id="copyPromptButton"
+                type="button"
+                aria-label="Copy prompt"
+                style="
+                  padding: 4px 10px;
+                  font-size: 12px;
+                  border-radius: 6px;
+                  background-color: #5a9;
+                "
+              >
+                Copy
+              </button>
+              <button
+                id="clearPromptButton"
+                type="button"
+                style="
+                  padding: 4px 10px;
+                  font-size: 12px;
+                  border-radius: 6px;
+                  background-color: #5a9;
+                "
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+          <div id="customPromptCounterWrap" class="field-counter-wrap">
+            <div id="customPromptLiveCounter" class="field-live-counter" aria-live="polite">0 words · 0 tokens</div>
+            <textarea id="customPrompt" placeholder="Enter custom prompt here" rows="1"></textarea>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div
+    id="noteHistoryModal"
+    class="note-history-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="noteHistoryModalTitle"
+  >
+    <div class="note-history-modal-panel">
+      <div class="note-history-modal-header">
+        <h2 id="noteHistoryModalTitle" class="note-history-modal-title">Note</h2>
+        <div class="note-history-modal-actions">
+          <button
+            id="noteHistoryRestoreButton"
+            class="note-history-restore-button"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="noteHistoryRestoreMenu"
+          >
+            Restore to Workspace
+          </button>
+          <div
+            id="noteHistoryRestoreMenu"
+            class="note-history-restore-menu"
+            role="menu"
+            hidden
+          >
+            <button
+              id="noteHistoryRestoreCurrent"
+              class="note-history-restore-option"
+              type="button"
+              role="menuitem"
+            >
+              Replace current workspace
+            </button>
+            <button
+              id="noteHistoryRestoreNew"
+              class="note-history-restore-option"
+              type="button"
+              role="menuitem"
+            >
+              Open in new workspace
+            </button>
+          </div>
+          <button
+            id="noteHistoryModalClose"
+            class="note-history-modal-close"
+            type="button"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div class="note-history-modal-body">
+        <section class="note-history-modal-section">
+          <h3 id="noteHistoryTranscriptTitle" class="note-history-modal-section-title">
+            Transcript
+          </h3>
+          <textarea
+            id="noteHistoryTranscript"
+            class="note-history-modal-text"
+            readonly
+            aria-labelledby="noteHistoryTranscriptTitle"
+          ></textarea>
+        </section>
+        <section class="note-history-modal-section">
+          <h3 id="noteHistorySupplementaryTitle" class="note-history-modal-section-title">
+            Supplementary Information
+          </h3>
+          <textarea
+            id="noteHistorySupplementary"
+            class="note-history-modal-text"
+            readonly
+            aria-labelledby="noteHistorySupplementaryTitle"
+          ></textarea>
+        </section>
+        <section class="note-history-modal-section">
+          <h3 id="noteHistoryNoteTitle" class="note-history-modal-section-title">Note</h3>
+          <textarea
+            id="noteHistoryNote"
+            class="note-history-modal-text"
+            readonly
+            aria-labelledby="noteHistoryNoteTitle"
+          ></textarea>
+        </section>
+      </div>
+    </div>
+  </div>
+  <!-- Preset runtime storage isolation must run before provider modules. -->
+  <script src="./js/features/workspace-preset-bootstrap.js"></script>
+
+  <!-- Caps Lock warning for prompt-list and Workspace Set passwords. -->
+  <script type="module" src="./js/features/caps-lock-indicator.js"></script>
+
+  <!-- Provider persistence + provider UI wiring -->
+  <script type="module" src="./js/features/provider-persistence.js"></script>
+  <script type="module" src="./js/features/page-ui.js"></script>
+
+  <!-- Note usage + cost UI (safe: does NOT touch timer/status DOM) -->
+  <script type="module" src="./js/features/note-usage-cost.js"></script>
+  <script type="module" src="./js/features/recording-ui.js"></script>
+
+
+  <!-- Ensure main boot script runs after provider wiring -->
+  <script type="module" src="./js/main.js"></script>
+
+  <!-- Secondary Note Generator (independent generation session beside the
+       Recording Transcript). Loads after main.js so window.__app helpers
+       (usage/cost formatting, supplementary date handling) are available. -->
+  <script type="module" src="./js/features/secondary-note.js"></script>
+
+  <!-- Floating Mini Panel (multi-tab controller).
+       Must load after main.js so window.__app exists by the time
+       bootMiniController() runs. Registers window.__openMiniPanel,
+       listens for 'mini-panel:open-requested', and owns the
+       BroadcastChannel hub used to mirror open tabs. -->
+  <script type="module" src="./js/features/mini-controller.js"></script>
+
+  <!-- Guide Overlay (outside the grid container) -->
+  <div id="guideView">
+    <button id="guideClose" type="button" aria-label="Close">×</button>
+    <h3 id="guideHeading">Guide & Instructions</h3>
+    <p id="guideText"></p>
+  </div>
+
+  
+  <!-- Prices Overlay -->
+  <div id="pricesView" role="dialog" aria-modal="true" aria-labelledby="pricesHeading" aria-hidden="true">
+    <button id="pricesClose" type="button" aria-label="Close">×</button>
+    <h3 id="pricesHeading">Prices</h3>
+    <p id="pricesIntro"></p>
+    <div id="pricesBody"></div>
+  </div>
+
+  <!-- News Overlay (loads Nyheter_*.txt based on language) -->
+  <div id="newsView" aria-hidden="true">
+    <button id="newsClose" type="button" aria-label="Close">×</button>
+    <h3 id="newsHeading">News</h3>
+    <div id="newsText">Loading…</div>
+  </div>
+
+<!-- Costs & Billing Links Overlay (opens from the two header links) -->
+  <div id="billingLinksView" aria-hidden="true">
+    <div class="header-row">
+      <h3 id="billingLinksHeading">Costs & Billing Links</h3>
+      <button id="billingLinksClose" type="button" aria-label="Close">×</button>
+    </div>
+    <div id="billingLinksBody">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <script type="module" src="./js/features/overlays.js"></script>
+  <script type="module" src="./js/features/prices-overlay.js"></script>
+
+
+  <script type="module" src="./js/features/editor-tools.js"></script>
+  <!-- Prompt slot control extracted from inline transcribe.html logic -->
+  <script type="module" src="./js/features/prompt-slots-ui.js"></script>
+
+  <!-- Per-workspace history of the 30 most recent successfully generated primary notes -->
+  <script type="module" src="./js/features/note-history.js"></script>
+
+  <!-- Page-owned field feedback helpers (kept after main boot on purpose) -->
+  <script type="module" src="./js/features/field-feedback.js"></script>
+
+
+  <!-- Concurrent preset workspaces, preset backup, and preset toolbar. -->
+  <script type="module" src="./js/features/workspace-presets.js"></script>
+
+
+
+<script type="module" src="./nordlys-workspace.js"></script>
+</body>
+</html>

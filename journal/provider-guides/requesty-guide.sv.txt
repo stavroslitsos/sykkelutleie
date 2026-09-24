@@ -1,0 +1,19 @@
+REQUESTY – API-NYCKEL OCH INTEGRITET
+
+1. Skapa ett konto och fyll på krediter
+
+Gå till https://app.requesty.ai, skapa ett konto och öppna betalningsinställningarna. Lägg till en betalningsmetod och fyll på önskat saldo.
+
+2. Skapa en API-nyckel
+
+Öppna API Keys, välj Create New API Key, ge nyckeln ett namn och skapa den. Kopiera nyckeln direkt, eftersom hela nyckeln bara visas när den skapas.
+
+3. Stäng av loggning av prompts och svar
+
+Hitta nyckeln under API Keys, öppna inställningarna och sätt Logging till Off. Requesty lagrar då inte innehållet i prompts eller svar som skickas med denna nyckel.
+
+4. Använd nyckeln i appen
+
+Klistra in nyckeln i fältet Requesty API key på startsidan. Öppna sedan transkriptionsverktyget, välj Requesty som leverantör för anteckningsgenerering och välj önskad modell.
+
+Integritet: Alla Requesty-modeller som är tillgängliga i den här appen är valda för behandling endast inom EU, utan datalagring och utan modellträning; loggning av prompts och svar bör vara avstängd för API-nyckeln.

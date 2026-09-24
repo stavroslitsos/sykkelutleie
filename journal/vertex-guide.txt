@@ -1,0 +1,179 @@
+VERTEX AI BACKEND (EUROPE-WEST4) — SIMPLE SETUP GUIDE FOR THIS APP
+
+This guide helps you set up a small backend in your own Google Cloud project. When you’re done, you’ll copy two values into this app:
+
+- Backend URL (Cloud Run URL)
+- Secret key (backend secret)
+
+These allow the app to call Vertex AI through your project.
+
+
+Important: security and costs (READ)
+- DO NOT share the Backend URL or Secret key with anyone.
+- If someone else gets them, they can run requests through your backend and generate costs in your Google Cloud project.
+
+
+Overview: what you will do
+1) Create project + billing
+2) Enable required APIs
+3) Grant the correct permissions to the default Compute Engine service account
+4) Deploy with Infrastructure Manager (Terraform)
+5) Copy the URL + secret key into the app
+
+
+STEP 0 — PREREQUISITES (project, billing, and APIs)
+
+0.1 Create a Google Cloud project
+1) Open Google Cloud Console
+2) Click the project selector (top bar)
+3) Click NEW PROJECT
+4) Create the project
+   Tip: Note the project name — but you’ll especially need the Project ID later.
+
+0.2 Enable billing (required)
+Cloud Run + Vertex AI require billing.
+1) Make sure your new project is selected in the top bar
+2) Go to Billing
+3) Link a billing account to the project
+
+0.3 Enable required APIs (important if something fails)
+In some projects you’ll get a prompt that says “Enable … API”. Click Enable.
+
+If you don’t get a prompt, you can enable them manually:
+Go to APIs & Services → Library and make sure these are enabled:
+
+- Infrastructure Manager API
+- Service Usage API  ✅ (important so the deployment can check/enable other APIs)
+- Compute Engine API, Cloud Run API, Secret Manager API, Vertex AI API
+- After opening each one, click Enable
+
+Tip: If you later get an error mentioning “Service Usage API … disabled”, come back here and enable it.
+
+
+STEP 1 — GRANT PERMISSIONS TO THE DEFAULT COMPUTE ENGINE SERVICE ACCOUNT
+
+We use the project’s default Compute Engine service account to run the deployment.
+
+1.1 Find the default Compute Engine service account
+1) Go to IAM & Admin → IAM
+2) Find the principal that looks like:
+   PROJECT_NUMBER-compute@developer.gserviceaccount.com
+   (it may also appear as “Compute Engine default service account”)
+
+1.2 Grant the required roles
+1) Click Grant access
+2) In New principals, paste the email of the default Compute service account
+3) Add these roles:
+   - Owner
+   - Infrastructure Manager Service Agent (roles/config.agent)
+     (After Owner: click “Add another role” and add the second one.)
+4) Click Save
+
+
+STEP 2 — DEPLOY WITH INFRASTRUCTURE MANAGER (Terraform)
+
+2.1 Open Infrastructure Manager (or search for it in the top search bar)
+Open:
+https://console.cloud.google.com/infra-manager
+
+2.2 Create a new deployment
+1) Click Create
+2) Choose:
+   - Deployment ID: any name you want (example: vertex-note-backend)
+   - Region: europe-west4
+   - Service account: select the default Compute Engine service account
+     (...-compute@developer.gserviceaccount.com)
+
+2.3 Source (Git) — use the template repo
+Leave source type as Git, and fill in:
+
+- Git repo URL: https://github.com/vertex-note-tools/Vertex-note
+- Git directory: infra
+- Git ref: main
+
+Click Continue
+
+2.4 Terraform value (only one)
+- You should see one variable: project_id
+- If not, under “Key 1”, type project_id
+
+Then:
+1) Click the project selector in the Cloud Console top bar
+2) Find the Project ID (typically like: my-project-123456)
+3) Paste it into the field WITH quotation marks, like:
+   "my-project-123456"
+4) Click Create deployment / Apply
+
+
+STEP 3 — COPY THE BACKEND URL + SECRET KEY
+
+When the deployment is finished (green check / “Active”):
+1) Open the deployment
+2) Click Outputs
+3) Copy and store securely:
+   - service_url  → this is your Backend URL
+   - backend_secret → this is your Secret key
+
+
+STEP 4 — CONNECT THE BACKEND TO THIS APP
+
+Go back to the app’s home screen and paste:
+- Backend URL = service_url
+- Secret key = backend_secret
+
+Done — you can now use Google Vertex/Gemini for note generation.
+
+
+WHERE TO FIND THESE VALUES LATER
+
+The Backend URL and secret key are stored as deployment outputs.
+
+To retrieve them again:
+1) Cloud Console → Infrastructure Manager
+2) Open the deployment you created
+3) Open Outputs
+4) Copy:
+   - service_url
+   - backend_secret
+
+
+UPDATE (if the app says there’s a new backend version)
+
+If the app/news section says there’s an update to the Google Vertex setup, you can update your existing backend like this:
+
+1) Log in to Google Cloud Console
+2) Go to Infrastructure Manager
+3) Open the deployment you previously created (the one you use today)
+4) Click Edit (everything should already be pre-filled)
+5) Scroll down and click Update / Apply / Deploy (button text may vary)
+6) Wait until the status is Active
+
+After this, your backend will be on the latest version (and the app can keep using the same Backend URL and secret key).
+
+
+TROUBLESHOOTING (only if the deployment fails)
+
+“Permission denied” / role error
+Double-check that the default Compute Engine service account has BOTH roles:
+- Owner
+- roles/config.agent
+
+“Service Usage API … disabled” / 403 error
+Enable the Service Usage API:
+1) Cloud Console → APIs & Services → Library
+2) Search: Service Usage API
+3) Click Enable
+4) Go back to Infrastructure Manager → try Apply again
+
+“I can’t find the default Compute Engine service account”
+Enable the Compute Engine API once:
+1) Cloud Console → Compute Engine
+2) If prompted: enable the API
+3) Go back to IAM & Admin → IAM and find:
+   PROJECT_NUMBER-compute@developer.gserviceaccount.com
+
+Infrastructure Manager API is not enabled
+Enable it manually:
+1) Cloud Console → APIs & Services → Library
+2) Search: Infrastructure Manager API
+3) Click Enable

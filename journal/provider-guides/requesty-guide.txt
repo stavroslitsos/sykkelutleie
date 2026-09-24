@@ -1,0 +1,19 @@
+REQUESTY – API KEY AND PRIVACY
+
+1. Create an account and add credits
+
+Go to https://app.requesty.ai, create an account and open the billing settings. Add a payment method and top up your desired balance.
+
+2. Create an API key
+
+Open API Keys, select Create New API Key, give the key a name and create it. Copy the key immediately, as the full key is only shown when it is created.
+
+3. Turn off prompt and response logging
+
+Find the key under API Keys, open its settings and set Logging to Off. Requesty will then not store the content of prompts or responses sent with this key.
+
+4. Use the key in the app
+
+Paste the key into the Requesty API key field on the front page. Then open the transcription tool, select Requesty as the note-generation provider and choose the desired model.
+
+Privacy: All Requesty models available in this app are selected for EU-only processing, with no data retention and no model training; prompt and response logging should be turned off for the API key.

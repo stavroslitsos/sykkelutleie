@@ -1,0 +1,28 @@
+SONIOX – CHIAVE API E ACCESSO UE
+
+1. Crea un account e aggiungi crediti
+
+Vai su https://console.soniox.com, crea un account e apri Billing o Credits. Aggiungi un metodo di pagamento e ricarica il saldo desiderato.
+
+2. Richiedi l’accesso UE
+
+Invia un’e-mail a support@soniox.com e richiedi l’accesso al EU regional deployment di Soniox. Spiega che ti servono un progetto UE e una chiave API europea.
+
+Messaggio suggerito:
+
+Hello,
+
+I would like to use the Soniox Speech-to-Text API for clinical consultations. Could you enable access to the European Union regional deployment for my account so that I can create an EU project and API key?
+
+Kind regards,
+[Nome / organizzazione]
+
+3. Crea un progetto UE e una chiave API
+
+Dopo l’attivazione dell’accesso UE, crea un nuovo progetto nella Soniox Console e seleziona European Union come regione. Apri quindi API Keys nel progetto UE, crea una chiave e copiala immediatamente.
+
+4. Usa la chiave nell’app
+
+Incolla la chiave nel campo Soniox API key della pagina iniziale. Apri lo strumento di trascrizione, seleziona Soniox come provider speech-to-text e scegli EU come endpoint.
+
+Privacy: con una chiave API proveniente da un progetto Soniox UE e l’endpoint europeo selezionato nell’app, il servizio viene utilizzato con ZDR, trattamento dei dati esclusivamente nell’UE e nessun addestramento dei modelli.

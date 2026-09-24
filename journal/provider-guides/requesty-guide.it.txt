@@ -1,0 +1,19 @@
+REQUESTY – CHIAVE API E PRIVACY
+
+1. Crea un account e aggiungi crediti
+
+Vai su https://app.requesty.ai, crea un account e apri le impostazioni di fatturazione. Aggiungi un metodo di pagamento e ricarica il saldo desiderato.
+
+2. Crea una chiave API
+
+Apri API Keys, seleziona Create New API Key, assegna un nome alla chiave e creala. Copiala immediatamente, perché la chiave completa viene mostrata solo al momento della creazione.
+
+3. Disattiva la registrazione di prompt e risposte
+
+Trova la chiave sotto API Keys, apri le impostazioni e imposta Logging su Off. Requesty non conserverà quindi il contenuto dei prompt o delle risposte inviati con questa chiave.
+
+4. Usa la chiave nell’app
+
+Incolla la chiave nel campo Requesty API key della pagina iniziale. Apri quindi lo strumento di trascrizione, seleziona Requesty come provider per la generazione delle note e scegli il modello desiderato.
+
+Privacy: tutti i modelli Requesty disponibili in questa app sono selezionati per il trattamento esclusivamente nell’UE, senza conservazione dei dati e senza addestramento dei modelli; la registrazione di prompt e risposte deve essere disattivata per la chiave API.

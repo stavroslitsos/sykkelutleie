@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fri androgen-indeks og fritt testosteron – kalkulator</title>
+
+  <!-- Fonts (match transcribe design) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* Match base look & feel from transcribe.html :contentReference[oaicite:1]{index=1} */
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      font-weight: 400;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    input, select, textarea, button { font-family: inherit; font-weight: 400; }
+
+    .top-bar {
+      background-color: #e0e0e0;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    button {
+      background-color: #5a9;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+      margin: 0;
+    }
+    button:hover { background-color: #489; }
+    button:active { transform: scale(0.98); }
+    button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transition: none;
+      transform: none;
+    }
+
+    .wrap {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 20px 28px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      padding: 18px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0 0 14px;
+    }
+    .sub {
+      font-size: 14px;
+      color: #555;
+      margin: 0 0 18px;
+      line-height: 1.35;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 16px;
+    }
+    @media (max-width: 780px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-size: 14px;
+      color: #333;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="number"], input[type="text"], select {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 16px;
+      box-sizing: border-box;
+      background: #fff;
+      min-width: 140px;
+    }
+    input.small { min-width: 120px; }
+    select { min-width: 140px; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .msg {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .msg.error {
+      border-color: #f2b8b5;
+      background: #fff5f5;
+      color: #8a1f1a;
+    }
+    .msg.ok {
+      border-color: #bfe3c9;
+      background: #f4fff7;
+      color: #1f5f35;
+    }
+
+    .results {
+      margin-top: 16px;
+      display: none;
+      gap: 12px;
+    }
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .kv {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .kv .k { font-weight: 600; }
+    .kv .v { text-align: right; }
+
+    details {
+      margin-top: 14px;
+      border-top: 1px solid #eee;
+      padding-top: 12px;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .fineprint {
+      margin-top: 14px;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.35;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      background: #f7f7f7;
+      font-size: 12px;
+      color: #444;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-bar">
+    
+
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <div style="font-size:16px; font-weight:700; color:#333;">Fri androgen-indeks / fritt testosteron - kalkulator</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>Fri androgen-indeks (FAI) og fritt / biotilgjengelig testosteron</h1>
+      <p class="sub">
+        Kalkulatoren beregner fritt og biotilgjengelig testosteron basert på total testosteron, SHBG og albumin. Den beregner også FAI(Fri androgen indeks). Basert på alder, vil man også kunne se hvor man ligger i forhold til referanseverdier.
+      </p>
+
+      <div class="grid" role="form" aria-label="Kalkulator">
+        <div class="field">
+          <label for="sex">Kjønn</label>
+          <select id="sex">
+            <option value="male" selected>Mann</option>
+            <option value="female">Kvinne</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="age">Alder (år)</label>
+          <input id="age" type="number" min="0" step="1" placeholder="f.eks. 42" />
+        </div>
+
+        <div class="field">
+          <label>Albumin</label>
+          <div class="row">
+            <input id="album" class="small" type="text" inputmode="decimal" value="43" />
+            <select id="albumUnit">
+              <option value="g/L" selected>g/L</option>
+              <option value="g/dL">g/dL</option>
+            </select>
+            <span class="pill">Tips: 43 g/L hvis ukjent</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>SHBG</label>
+          <div class="row">
+            <input id="shbg" class="small" type="text" inputmode="decimal" placeholder="nmol/L" />
+            <span class="pill">nmol/L</span>
+          </div>
+        </div>
+
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Testosteron (total)</label>
+          <div class="row">
+            <input id="testo" class="small" type="text" inputmode="decimal" placeholder="verdi" />
+            <select id="testoUnit">
+              <option value="nmol/L" selected>nmol/L</option>
+              <option value="ng/dL">ng/dL</option>
+              <option value="ng/mL">ng/mL</option>
+              <option value="nmol/dL">nmol/dL</option>
+              <option value="nmol/mL">nmol/mL</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="calcBtn" type="button">Beregn</button>
+        <button id="resetBtn" type="button" style="background-color:#777;">Nullstill</button>
+      </div>
+
+      <div id="message" class="msg" style="display:none;"></div>
+
+      <div id="results" class="results">
+        <div class="results-grid" aria-live="polite">
+          <div class="kv">
+            <div class="k">Fritt testosteron</div>
+            <div class="v" id="outFree">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Biotilgjengelig testosteron</div>
+            <div class="v" id="outBio">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Fri androgen-indeks (FAI)</div>
+            <div class="v" id="outFAI">—</div>
+          </div>
+        </div>
+
+        <div id="interpretation" class="msg" style="margin-top:12px;"></div>
+
+        <details>
+          <summary>Info om beregning og referanser</summary>
+          <div class="msg" style="margin-top:10px;">
+            <p style="margin:0 0 10px;">
+              Den største delen av testosteron i blodet er bundet til proteiner:
+              ca. 66–78% til SHBG (høy affinitet), 20–32% til albumin (lav affinitet),
+              og kun 1–3% sirkulerer som fritt testosteron.
+            </p>
+
+            <p style="margin:0 0 10px;">
+              <strong>FAI</strong> brukes som et estimat som kompenserer for variasjon i SHBG:
+              <br />
+              <strong>FAI = Testosteron (nmol/L) × 100 / SHBG (nmol/L)</strong>
+            </p>
+
+            <p style="margin:0;">
+              <strong>Fritt testosteron</strong> beregnes med en matematisk metode basert på total testosteron, SHBG og albumin.
+              Dersom albumin ikke foreligger kan det legges inn 43 g/L.
+            </p>
+          </div>
+        </details>
+
+        <div class="fineprint">
+          <strong>Ansvarsfraskrivelse:</strong> Resultater fra denne kalkulatoren skal ikke alene brukes til å ta kliniske beslutninger
+          uten vurdering av relevant klinikk og lokal laboratorieinformasjon. Beregnet fritt/biotilgjengelig testosteron kan være mindre
+          pålitelig ved situasjoner med betydelig interferens i SHBG-binding (f.eks. graviditet eller behandling som gir svært høye DHT-nivåer).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    
+    // --- Helpers ---
+    function parseNumber(v) {
+      if (v == null) return NaN;
+      const s = String(v).trim().replace(/\s+/g, '').replace(',', '.');
+      return Number(s);
+    }
+
+    // Same "roundoff" behaviour as pasted calculator (kept intentionally)
+    function roundoff(value) {
+      var value4 = "" + Math.round(value);
+      var bonus2 = value4.length + 1;
+      var bonus = 0;
+      if (value < 100) { bonus = bonus + 1; }
+      if (value < 10) { bonus = bonus + 1; }
+      if (value < 1) { bonus = bonus + 1; }
+      if (value < 0.1) { bonus = bonus + 1; }
+      if (value < 0.01) { bonus = bonus + 1; }
+      if (value < 0.001) { bonus = bonus + 1; }
+      if (value < 0.0001) { bonus = bonus + 1; }
+      bonus2 = bonus2 + bonus;
+
+      var whole = Math.round(value * Math.pow(10, bonus));
+      var whole2 = "" + whole * Math.pow(10, -1 * bonus);
+      whole2 = whole2.substr(0, bonus2);
+      return whole2;
+    }
+
+    function showMessage(text, kind) {
+      const el = document.getElementById('message');
+      el.style.display = 'block';
+      el.className = 'msg ' + (kind || '');
+      el.textContent = text;
+    }
+
+    function hideMessage() {
+      const el = document.getElementById('message');
+      el.style.display = 'none';
+      el.textContent = '';
+      el.className = 'msg';
+    }
+
+    // Unit conversions for interpretation (nmol/L)
+    function testoToNmolL(value, unit) {
+      // Unit options in UI: nmol/L, ng/dL, ng/mL, nmol/dL, nmol/mL
+      if (!isFinite(value)) return NaN;
+      switch (unit) {
+        case 'nmol/L': return value;
+        case 'nmol/dL': return value * 10;
+        case 'nmol/mL': return value * 1000;
+        case 'ng/dL': return value * 0.0347;
+        case 'ng/mL': return value * 3.47;
+        default: return NaN;
+      }
+    }
+
+    function freeToNmolL(freeValue, unit) {
+      if (!isFinite(freeValue)) return NaN;
+      // freeValue is displayed in the selected testoUnit.
+      switch (unit) {
+        case 'nmol/L': return freeValue;
+        case 'nmol/dL': return freeValue * 10;
+        case 'nmol/mL': return freeValue * 1000;
+        case 'ng/dL': return freeValue * 0.0347;
+        case 'ng/mL': return freeValue * 3.47;
+        default: return NaN;
+      }
+    }
+
+    function classify(value, low, high) {
+      if (!isFinite(value)) return { label: 'Ukjent', cls: '' };
+      if (isFinite(low) && value < low) return { label: 'Lav', cls: 'error' };
+      if (isFinite(high) && value > high) return { label: 'Høy', cls: 'error' };
+      return { label: 'Innenfor', cls: 'ok' };
+    }
+
+    function getFreeRefMaleByAge(age) {
+      // From provided text (nmol/L)
+      if (!isFinite(age)) return null;
+      if (age >= 18 && age <= 20) return { low: 0.32, high: 0.80, label: '18–20 år' };
+      if (age >= 21 && age <= 30) return { low: 0.25, high: 0.70, label: '21–30 år' };
+      if (age >= 31 && age <= 40) return { low: 0.21, high: 0.60, label: '31–40 år' };
+      if (age >= 41 && age <= 50) return { low: 0.19, high: 0.50, label: '41–50 år' };
+      if (age >= 51 && age <= 60) return { low: 0.17, high: 0.50, label: '51–60 år' };
+      if (age >= 61 && age <= 70) return { low: 0.16, high: 0.40, label: '61–70 år' };
+      if (age >= 71 && age <= 80) return { low: 0.16, high: 0.40, label: '71–80 år' };
+      return null;
+    }
+
+    function getFAIRef(sex, age) {
+      // From provided text:
+      // Menn 18–50: 25.9–108.3
+      // Menn ≥50: 16.2–56.6
+      // Kvinner ≤5.7
+      if (sex === 'female') {
+        return { low: NaN, high: 5.7, label: 'Kvinner: ≤ 5,7' };
+      }
+      // male default
+      if (isFinite(age) && age >= 50) {
+        return { low: 16.2, high: 56.6, label: 'Menn ≥50 år: 16,2–56,6' };
+      }
+      return { low: 25.9, high: 108.3, label: 'Menn 18–50 år: 25,9–108,3' };
+    }
+
+    // --- Core calculation (ported from pasted ISSAM calculator) ---
+    function calculate() {
+      hideMessage();
+
+      const sex = document.getElementById('sex').value;
+      const age = parseNumber(document.getElementById('age').value);
+
+      let album = parseNumber(document.getElementById('album').value);
+      let shbg = parseNumber(document.getElementById('shbg').value);
+      let testo = parseNumber(document.getElementById('testo').value);
+
+      const albumUnit = document.getElementById('albumUnit').value; // g/L or g/dL
+      const testoUnit = document.getElementById('testoUnit').value;
+
+      if (!isFinite(album) || album <= 0 || !isFinite(shbg) || shbg <= 0 || !isFinite(testo) || testo <= 0) {
+        showMessage('Vennligst fyll inn gyldige verdier for albumin, SHBG og testosteron før du beregner.', 'error');
+        document.getElementById('results').style.display = 'none';
+        return;
+      }
+
+      // --- Begin original logic (minimal changes; keep numerics & structure) ---
+      var kt = 1000000000;
+      var wortel = 0;
+
+      // Convert total T to ng/dL internally (same as original)
+      var testo_ngdL = testo;
+      if (testoUnit === "ng/dL")  { testo_ngdL = testo; }
+      if (testoUnit === "ng/mL")  { testo_ngdL = testo * 100; }
+      if (testoUnit === "nmol/dL")  { testo_ngdL = testo * 288.4; }
+      if (testoUnit === "nmol/mL")  { testo_ngdL = testo * 288.4 * 100; }
+      if (testoUnit === "nmol/L")  { testo_ngdL = testo * 28.84; }
+
+      var testo2 = testo_ngdL / 2.8 * 1e-10;
+
+      // SHBG conversion (same as original)
+      var shbg_work = shbg / 10;
+      var shbg2 = shbg_work * 1e-8;
+
+      // Albumin in g/dL internally (same as original)
+      var album_gdL = album;
+      if (albumUnit === "g/L") { album_gdL = album / 10; }
+
+      var fa  = ((36000 * album_gdL * (1.45 * .0001)) + 1) * kt;
+      var fa1 = ((36000 * album_gdL * (1.45 * .0001)) + 1);
+      var fb  = kt * (shbg2 - testo2) + fa1;
+      var fc  = -testo2;
+
+      wortel = Math.sqrt(fb * fb - 4 * fa * fc);
+
+      var ftesto = (-fb + wortel) / (2 * fa);
+      var ftestop = (ftesto * 100) / testo2;
+
+      // ftc and biot in ng/dL baseline
+      var ftc = (ftestop / 100) * testo_ngdL;
+      var biot = ftc * fa1;
+
+      var biot2 = (biot * 100) / testo_ngdL;
+
+      // Convert outputs to chosen unit (same as original)
+      var ftc_out = ftc;
+      var biot_out = biot;
+
+      if (testoUnit === "ng/mL") {
+        ftc_out = ftc_out / 100;
+        biot_out = biot_out / 100;
+      }
+      if (testoUnit === "nmol/dL") {
+        ftc_out = ftc_out * 0.00347;
+        biot_out = biot_out * 0.00347;
+      }
+      if (testoUnit === "nmol/L") {
+        ftc_out = ftc_out * 0.0347;
+        biot_out = biot_out * 0.0347;
+      }
+      if (testoUnit === "nmol/mL") {
+        ftc_out = ftc_out * 0.0000347;
+        biot_out = biot_out * 0.0000347;
+      }
+      // --- End original logic ---
+
+      // FAI (uses nmol/L): FAI = T(nmol/L)*100 / SHBG(nmol/L)
+      const totalT_nmolL = testoToNmolL(testo, testoUnit);
+      const fai = (isFinite(totalT_nmolL) && isFinite(shbg) && shbg > 0) ? (totalT_nmolL * 100 / shbg) : NaN;
+
+      // Render results (match original display pattern)
+      document.getElementById('outFree').textContent =
+        `${roundoff(ftc_out)} ${testoUnit}  =  ${roundoff(ftestop)} %`;
+      document.getElementById('outBio').textContent =
+        `${roundoff(biot_out)} ${testoUnit}  =  ${roundoff(biot2)} %`;
+      document.getElementById('outFAI').textContent =
+        isFinite(fai) ? `${roundoff(fai)}` : '—';
+
+      // Interpretation: compare Free T (nmol/L) and FAI to reference intervals
+      const free_nmolL = freeToNmolL(ftc_out, testoUnit);
+
+      const faiRef = getFAIRef(sex, age);
+      const faiClass = (sex === 'female')
+        ? classify(fai, NaN, faiRef.high)
+        : classify(fai, faiRef.low, faiRef.high);
+
+      let interpHtml = '';
+
+      // Free T reference (men only from provided text)
+      if (sex === 'male') {
+        const ref = getFreeRefMaleByAge(age);
+        if (ref) {
+          const cls = classify(free_nmolL, ref.low, ref.high);
+          interpHtml += `
+            <div style="margin-bottom:10px;">
+              <strong>Fritt testosteron (menn, ${ref.label}):</strong><br/>
+              Beregnet: <strong>${isFinite(free_nmolL) ? roundoff(free_nmolL) : '—'} nmol/L</strong><br/>
+              Referanse: <strong>${ref.low}–${ref.high} nmol/L</strong> → <strong>${cls.label}</strong>
+            </div>
+          `;
+        } else {
+          interpHtml += `
+            <div style="margin-bottom:10px;">
+              <strong>Fritt testosteron (menn):</strong><br/>
+              Beregnet: <strong>${isFinite(free_nmolL) ? roundoff(free_nmolL) : '—'} nmol/L</strong><br/>
+              Referanseintervall: ikke tilgjengelig for denne alderen i teksten (vises kun 18–80 år).
+            </div>
+          `;
+        }
+      } else {
+        interpHtml += `
+          <div style="margin-bottom:10px;">
+            <strong>Fritt testosteron (kvinner):</strong><br/>
+            Beregnet: <strong>${isFinite(free_nmolL) ? roundoff(free_nmolL) : '—'} nmol/L</strong><br/>
+            Referanseintervall for kvinner er ikke oppgitt i teksten du la ved (bruk lokalt lab-intervall).
+          </div>
+        `;
+      }
+
+      // FAI interpretation
+      const faiRefText = faiRef.label;
+      interpHtml += `
+        <div>
+          <strong>FAI(Fri androgen indeks):</strong><br/>
+          Beregnet: <strong>${isFinite(fai) ? roundoff(fai) : '—'}</strong><br/>
+          Referanse: <strong>${faiRefText}</strong> → <strong>${faiClass.label}</strong>
+        </div>
+      `;
+
+      const interpEl = document.getElementById('interpretation');
+      interpEl.className = 'msg ' + ( (faiClass.cls === 'error') ? 'error' : 'ok' );
+      interpEl.innerHTML = interpHtml;
+
+      document.getElementById('results').style.display = 'block';
+      showMessage('Beregning fullført.', 'ok');
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', calculate);
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.getElementById('sex').value = 'male';
+      document.getElementById('age').value = '';
+      document.getElementById('album').value = '43';
+      document.getElementById('albumUnit').value = 'g/L';
+      document.getElementById('shbg').value = '';
+      document.getElementById('testo').value = '';
+      document.getElementById('testoUnit').value = 'nmol/L';
+      hideMessage();
+      document.getElementById('results').style.display = 'none';
+    });
+
+    // Enter-to-calc for convenience
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'SELECT')) {
+          e.preventDefault();
+          calculate();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

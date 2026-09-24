@@ -1,0 +1,267 @@
+============================================================
+AWS BEDROCK (EU STOCKHOLM) SETUP GUIDE (FOR THIS APP)
+============================================================
+
+This guide helps you create your own AWS Bedrock “proxy” (a small Lambda function)
+so this app can use these Claude models from your AWS account:
+
+  • Claude Sonnet 4
+  • Claude Sonnet 4.5
+  • Claude Haiku 4.5
+
+
+------------------------------------------------------------
+PRIVACY / EU PROCESSING (PLAIN LANGUAGE)
+------------------------------------------------------------
+
+If you keep everything in the EU Stockholm region (eu-north-1), then requests are
+processed in that EU region.
+
+AWS states that Amazon Bedrock does not store or log your prompts and completions,
+does not use them to train AWS models, and does not share them with third parties.
+
+Using the AI models by way of this setup guarantees zero data retention and keep all data processing and residency within the EU, making usage of the models fully GDPR compliant.
+
+
+------------------------------------------------------------
+WHAT YOU’LL GET AT THE END
+------------------------------------------------------------
+
+You will copy two values into this app:
+
+  1) Backend URL  (your Lambda Function URL)
+  2) Secret key   (a password you choose)
+
+
+============================================================
+STEP-BY-STEP SETUP
+============================================================
+
+---------------------------------
+STEP 1 — CREATE / SIGN IN TO AWS
+---------------------------------
+
+1) Create an AWS account(https://aws.amazon.com/) (or sign in if you already have one).
+2) For this setup, it’s okay to use your AWS “root user” (account owner login).
+   (Later you can create a normal admin user if you want — optional.)
+
+Tip (recommended): Enable MFA (2-factor login) for your AWS root user.
+
+
+-----------------------------------------
+STEP 2 — SET REGION TO EU STOCKHOLM (KEY)
+-----------------------------------------
+
+In the AWS Console, find the Region selector in the TOP RIGHT corner and choose:
+
+  ✅ Europe (Stockholm) — eu-north-1
+
+Keep this Region selected for the rest of the steps.
+
+
+------------------------------------
+STEP 3 — ADD BILLING (PAYMENT METHOD)
+------------------------------------
+
+Amazon Bedrock usage costs money, so you must add a payment method:
+
+1) In AWS Console, search for:  Billing
+2) Open Billing
+3) Find Payment methods / Payment preferences
+4) Add a credit/debit card
+
+No monthly fees. You’re only charged for actual use of the models, and you pay nothing when inactive.
+
+------------------------------------------------
+STEP 4 — ENABLE AMAZON BEDROCK + ENABLE CLAUDE
+------------------------------------------------
+
+You must enable model access in Bedrock before the proxy can call the models:
+
+In the AWS Console, search for: Amazon Bedrock
+
+Open Amazon Bedrock
+
+In the left-hand menu, select: Model catalog
+
+Click on one of these models:
+✅ Claude Sonnet 4
+✅ Claude Sonnet 4.5
+✅ Claude Haiku 4.5
+(It should be enough to enable just one of them—then the other Claude models will be enabled automatically.)
+
+Accept/confirm any prompts.
+
+You may be asked for basic info such as company name / website / intended use.
+It’s not very important what you enter here.
+
+Example intended-use text (at the bottom):
+“Generation of medical notes in a doctor–patient setting.”
+
+
+------------------------------------------------------------
+STEP 5 — DEPLOY THE PROXY (CLICK THE QUICK-CREATE LINK)
+------------------------------------------------------------
+
+This link opens AWS CloudFormation with everything prepared. You’ll enter a
+secret password and click Create.
+
+Copy/paste this into your browser WHILE LOGGED INTO AWS:
+
+https://eu-north-1.console.aws.amazon.com/cloudformation/home?region=eu-north-1#/stacks/create/review?templateURL=https%3A%2F%2Fs3.eu-north-1.amazonaws.com%2Fbedrock-note-proxy-cfn-eu-north-1-yourbrand%2Ftemplates%2Fbedrock-note-proxy.yaml&stackName=bedrock-note-proxy&param_BedrockRegion=eu-north-1&param_DefaultModelKey=sonnet-4&param_CodeS3Bucket=bedrock-note-proxy-cfn-eu-north-1-yourbrand&param_CodeS3Key=artifacts%2Fbedrock-note-proxy.zip
+
+
+-----------------------------------------------------
+STEP 6 — SET “ProxySecret” (YOUR PASSWORD) + SAVE IT
+-----------------------------------------------------
+
+On the CloudFormation Create Stack page, scroll down until you see:
+
+  ProxySecret
+
+1) Enter a strong password (minimum 16 characters).
+2) Save it somewhere safe(f.ex):
+     • Password manager 
+     • Encrypted note / encrypted file
+     • Dropbox 
+
+⚠️ You WILL need this secret key in the app later.
+
+
+-----------------------------------------------
+STEP 7 — CHECK THE 3 BOXES AND CREATE THE STACK
+-----------------------------------------------
+
+Scroll to the bottom of the page.
+
+You will see 3 acknowledgement checkboxes (IAM + SAM/macro).
+✅ Tick all three.
+Then click:
+✅ Create stack
+
+
+--------------------------------------------
+STEP 8 — WAIT UNTIL STATUS IS “CREATE_COMPLETE”
+--------------------------------------------
+
+After you click Create stack:
+1) You will see the Stack page (often on the Events tab)
+2) Wait until the stack Status becomes:
+   ✅ CREATE_COMPLETE
+
+
+------------------------------------------------------
+STEP 9 — COPY YOUR BACKEND URL (THE “FunctionUrl” VALUE)
+------------------------------------------------------
+
+When the stack is CREATE_COMPLETE:
+
+1) Open the stack’s:  "Outputs"  tab
+2) Find:              FunctionUrl
+3) Copy it and store it safely
+
+That is your app’s “Backend URL”.
+
+
+-----------------------------------------
+STEP 10 — CONNECT IT TO THIS APP
+-----------------------------------------
+
+In the app’s input fields on the front page:
+
+1) Bedrock backend URL  → paste the FunctionUrl
+2) Secret key           → paste the ProxySecret you created
+
+Done — you can now use:
+  • Claude Sonnet 4
+  • Claude Sonnet 4.5
+  • Claude Haiku 4.5
+
+
+============================================================
+WHERE TO FIND / CHANGE YOUR SECRET LATER (IMPORTANT)
+============================================================
+
+If you forgot your ProxySecret:
+
+1) AWS Console → Lambda
+2) Open Functions
+3) Click your proxy function (created by the stack)
+4) Go to: Configuration → Environment variables
+5) Look for: PROXY_SECRET
+6) Copy it.
+
+
+============================================================
+TROUBLESHOOTING
+============================================================
+
+1) “AccessDenied” / “Model not enabled”
+   • Make sure you enabled the Claude models in:
+     Amazon Bedrock → Model access → Modify model access
+   • Confirm your AWS region is eu-north-1 (top right).
+
+2) “Unauthorized” (401)
+   • Your secret key in the app must match ProxySecret EXACTLY.
+   • Copy/paste carefully.
+
+3) Stack fails to create
+   • Make sure you ticked all 3 acknowledgement boxes.
+   • Make sure region is eu-north-1 (top right).
+
+
+============================================================
+UPDATING YOUR STACK LATER (WHEN NEW APP UPDATES ARE RELEASED)
+============================================================
+
+If there will ever be information on future updates for the AWS Bedrock setup in
+the app, this is how you update your existing CloudFormation stack. New updates
+will be informed inside the web app when they happen.
+
+IMPORTANT:
+• Updating the stack will update your Lambda proxy setup.
+• Keep your existing ProxySecret unless you want to change it (if you change it,
+  you must also update it in the app).
+
+------------------------------------------------------------
+HOW TO UPDATE THE STACK (CLOUDFORMATION)
+------------------------------------------------------------
+
+1) Log in to AWS Console(root user), make sure your Region is:
+   ✅ Europe (Stockholm) — eu-north-1 (upper right corner)
+
+2) Open: CloudFormation (can be found when typed from the search bar)
+3) Click: Stacks
+4) Select your stack (example name: bedrock-note-proxy)
+
+5) Click: Update stack ▼
+   Choose: ✅ Make a direct update
+
+6) Under “Prepare template”, choose:
+   ✅ Replace existing template
+   Then click: Next
+
+7) Choose template source:
+   ✅ Amazon S3 URL
+   Paste this Template URL:
+
+   https://bedrock-note-proxy-cfn-eu-north-1-yourbrand.s3.eu-north-1.amazonaws.com/templates/bedrock-note-proxy.yaml
+
+   Then click: Next
+
+8) Parameters:
+   • Leave values as-is (recommended), especially ProxySecret
+   Then click: Next 
+   
+9) Acknowledgements(Configure Stack Options):
+    Scroll to bottom of page. You will see 3 acknowledgement checkboxes (IAM + SAM/macro).
+    ✅ Tick all three.
+   Then click: Next
+10)  On the next page, scroll all the way down.
+    ✅ Then click: Submit
+
+11) Wait until the stack Status becomes:
+    ✅ UPDATE_COMPLETE
+
+Done — your proxy stack is now updated, and you can use the AWS Bedrock models with the latest updates.
+

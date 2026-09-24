@@ -1,0 +1,7 @@
+Nordlys Journal 0.1 - development version
+Adapted from public browser-delivered application files at https://tn-beta.netlify.app/ retrieved 24 September 2026.
+Original transcription/workspace/provider implementation: Transcribe Notes.
+New setup page, styling, local encrypted key backup and adaptation work: Nordlys Journal project for Stavros Litsos.
+Public accessibility alone does not establish an open-source redistribution license; no license grant is asserted here. Confirm original-source reuse terms before broader distribution.
+External libraries retain their respective authors' licenses. CDN dependencies are not bundled into this directory.
+No user keys, patient transcripts, patient notes or private prompt exports are included.

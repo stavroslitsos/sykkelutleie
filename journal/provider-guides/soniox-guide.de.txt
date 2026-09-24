@@ -1,0 +1,28 @@
+SONIOX – API-SCHLÜSSEL UND EU-ZUGANG
+
+1. Konto erstellen und Guthaben aufladen
+
+Rufen Sie https://console.soniox.com auf, erstellen Sie ein Konto und öffnen Sie Billing oder Credits. Hinterlegen Sie eine Zahlungsmethode und laden Sie das gewünschte Guthaben auf.
+
+2. EU-Zugang beantragen
+
+Senden Sie eine E-Mail an support@soniox.com und bitten Sie um Zugang zu Soniox’ EU regional deployment. Erklären Sie, dass Sie ein EU-Projekt und einen EU-API-Schlüssel benötigen.
+
+Vorschlag für die Nachricht:
+
+Hello,
+
+I would like to use the Soniox Speech-to-Text API for clinical consultations. Could you enable access to the European Union regional deployment for my account so that I can create an EU project and API key?
+
+Kind regards,
+[Name / Organisation]
+
+3. EU-Projekt und API-Schlüssel erstellen
+
+Nachdem der EU-Zugang aktiviert wurde, erstellen Sie in der Soniox Console ein neues Projekt und wählen European Union als Region. Öffnen Sie anschließend API Keys im EU-Projekt, erstellen Sie einen Schlüssel und kopieren Sie ihn sofort.
+
+4. Schlüssel in der App verwenden
+
+Fügen Sie den Schlüssel auf der Startseite in das Feld Soniox API key ein. Öffnen Sie das Transkriptionswerkzeug, wählen Sie Soniox als Spracherkennungsanbieter und EU als Endpunkt.
+
+Datenschutz: Mit einem API-Schlüssel aus einem Soniox-EU-Projekt und dem in der App ausgewählten EU-Endpunkt wird der Dienst mit ZDR, ausschließlicher Datenverarbeitung in der EU und ohne Modelltraining genutzt.

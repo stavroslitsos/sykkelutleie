@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>OMEQ – omregning til orale morfinekvivalenter</title>
+
+  <!-- Match transcribe.html font stack -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      font-weight: 400;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    input, select, textarea, button { font-family: inherit; font-weight: 400; }
+
+    /* Single-column layout (flush left) */
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      min-height: 100vh;
+    }
+    .main-content {
+      grid-column: 1 / 2;
+      grid-row: 1 / 2;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    /* Top Bar (transcribe-like) */
+    .top-bar {
+      background-color: #e0e0e0;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .top-bar h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+    }
+    .top-bar .subtle {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Buttons (transcribe-like) */
+    button {
+      background-color: #5a9;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.1s;
+      margin: 10px;
+    }
+    button:hover { background-color: #489; }
+    button:active { transform: scale(0.98); }
+    button:disabled {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.6;
+      transition: none;
+      transform: none;
+    }
+    .btn-secondary { background-color: #777; }
+    .btn-secondary:hover { background-color: #666; }
+
+    .content {
+      padding: 0 20px 20px 20px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .intro h2 {
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .intro p {
+      margin: 0 0 10px 0;
+      color: #555;
+      line-height: 1.35;
+    }
+    .intro ul {
+      margin: 10px 0 0 18px;
+      color: #555;
+      line-height: 1.35;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 14px 0 16px 0;
+    }
+    .toolbar button { margin: 0; }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      background: #fff;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 980px;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #f2f2f2;
+      border-bottom: 1px solid #ddd;
+      font-weight: 600;
+      text-align: left;
+      padding: 12px;
+      font-size: 14px;
+      z-index: 1;
+    }
+    tbody td {
+      border-top: 1px solid #eee;
+      padding: 10px 12px;
+      vertical-align: middle;
+      font-size: 14px;
+      color: #333;
+    }
+    tbody tr:nth-child(even) td { background: #fafafa; }
+
+    .ratio-input, .dose-input {
+      width: 110px;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: #fff;
+      color: #333;
+    }
+    .ratio-input[disabled] {
+      background: #f6f6f6;
+      color: #666;
+      cursor: not-allowed;
+    }
+    .omeq {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .totals {
+      margin-top: 12px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .totals .label { color: #555; font-size: 14px; }
+    .totals .value { font-size: 26px; font-weight: 800; letter-spacing: -0.2px; }
+
+    .note {
+      margin-top: 14px;
+      color: #666;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid-container">
+    <main class="main-content">
+      <div class="top-bar">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+          <h1>OMEQ – omregning til orale morfinekvivalenter</h1>
+          <div class="subtle">Beregner mg orale morfinekvivalenter (OMEQ) fra døgndose × ekvianalgetisk ratio</div>
+        </div>
+        <div></div>
+      </div>
+
+      <div class="content">
+        <div class="card intro">
+          <h2>Bruk</h2>
+          <p>Legg inn pasientens døgndose (i mg), og OMEQ beregnes per rad og summeres nederst.</p>
+          <ul>
+            <li>Desimaler kan skrives med komma eller punktum.</li>
+            </ul>
+
+          <div class="toolbar">
+            <button type="button" class="btn-secondary" onclick="eraseInputs()">Nullstill alle felt</button>
+          </div>
+        </div>
+
+        <input type="text" id="totalResults" value="24" hidden />
+
+        <div class="table-wrap" style="margin-top:14px;">
+          <table aria-label="Omregningstabell til OMEQ">
+            <thead>
+              <tr>
+                <th>Virkestoff</th>
+                <th>Administrasjonsvei</th>
+                <th>Ekvianalgetisk ratio</th>
+                <th>Døgndose (mg)</th>
+                <th>OMEQ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td title="Buprefarm/Bugnanto/Norspan depotplaster, Temgesic sublingvaltabl.">Buprenorfin (N02AE01) ⓘ</td>
+                <td>Sublingval *)</td>
+                <td><input class="ratio-input" type="text" id="1a" value="48" disabled aria-label="Ekvianalgetisk ratio: Buprenorfin Sublingval" /></td>
+                <td><input class="dose-input" type="text" id="1b" value="0" aria-label="Døgndose: Buprenorfin Sublingval" /></td>
+                <td class="omeq"><span id="result1">0</span></td>
+              </tr>
+              <tr>
+                <td title="Buprefarm/Bugnanto/Norspan depotplaster, Temgesic sublingvaltabl."></td>
+                <td title="Ingen utregning nødvendig. Skal styrken 10 mcg/time benyttes, legg inn 10.">Transdermal ⓘ</td>
+                <td><input class="ratio-input" type="text" id="2a" value="2,22" disabled aria-label="Ekvianalgetisk ratio: Buprenorfin Transdermal" /></td>
+                <td><input class="dose-input" type="text" id="2b" value="0" aria-label="Døgndose: Buprenorfin Transdermal" /></td>
+                <td class="omeq"><span id="result2">0</span></td>
+              </tr>
+              <tr>
+                <td title="DHC depottabletter">Dihydrokodein (N02AA08) ⓘ</td>
+                <td>Oral **)</td>
+                <td><input class="ratio-input" type="text" id="3a" value="0,05" disabled aria-label="Ekvianalgetisk ratio: Dihydrokodein Oral" /></td>
+                <td><input class="dose-input" type="text" id="3b" value="0" aria-label="Døgndose: Dihydrokodein Oral" /></td>
+                <td class="omeq"><span id="result3">0</span></td>
+              </tr>
+              <tr>
+                <td title="Fentanyl/Leptanal inj., Abstral sublingvaltabl., Instanyl nesespray, Durogesic/Fentanyl depotplaster">Fentanyl (N01AH01 og N02AB03) ⓘ</td>
+                <td title="100 mcg = 0,1 mg. Er døgndosen 50 mcg, legg inn 0,05.">Parenteral *) ⓘ</td>
+                <td><input class="ratio-input" type="text" id="4a" value="150" disabled aria-label="Ekvianalgetisk ratio: Fentanyl Parenteral" /></td>
+                <td><input class="dose-input" type="text" id="4b" value="0" aria-label="Døgndose: Fentanyl Parenteral" /></td>
+                <td class="omeq"><span id="result4">0</span></td>
+              </tr>
+              <tr>
+                <td title="Fentanyl/Leptanal inj., Abstral sublingvaltabl., Instanyl nesespray, Durogesic/Fentanyl depotplaster"></td>
+                <td title="100 mcg = 0,1 mg. Er døgndosen 200 mcg, legg inn 0,2.">Sublingval/intranasal *) ⓘ</td>
+                <td><input class="ratio-input" type="text" id="5a" value="250" disabled aria-label="Ekvianalgetisk ratio: Fentanyl Sublingval/intranasal" /></td>
+                <td><input class="dose-input" type="text" id="5b" value="0" aria-label="Døgndose: Fentanyl Sublingval/intranasal" /></td>
+                <td class="omeq"><span id="result5">0</span></td>
+              </tr>
+              <tr>
+                <td title="Fentanyl/Leptanal inj., Abstral sublingvaltabl., Instanyl nesespray, Durogesic/Fentanyl depotplaster"></td>
+                <td title="Ingen utregning nødvendig. Skal styrken 25 mcg/time benyttes, legg inn 25.">Transdermal ⓘ</td>
+                <td><input class="ratio-input" type="text" id="6a" value="2,40" disabled aria-label="Ekvianalgetisk ratio: Fentanyl Transdermal" /></td>
+                <td><input class="dose-input" type="text" id="6b" value="0" aria-label="Døgndose: Fentanyl Transdermal" /></td>
+                <td class="omeq"><span id="result6">0</span></td>
+              </tr>
+              <tr>
+                <td title="Palladone SR depotkapsel, Hydofon/Hydromorfonhydroklorid/Palladon inj./inf.">Hydromorfon (N02AA03) ⓘ</td>
+                <td>Oral **)</td>
+                <td><input class="ratio-input" type="text" id="7a" value="5" disabled aria-label="Ekvianalgetisk ratio: Hydromorfon Oral" /></td>
+                <td><input class="dose-input" type="text" id="7b" value="0" aria-label="Døgndose: Hydromorfon Oral" /></td>
+                <td class="omeq"><span id="result7">0</span></td>
+              </tr>
+              <tr>
+                <td title="Palladone SR depotkapsel, Hydofon/Hydromorfonhydroklorid/Palladon inj./inf."></td>
+                <td>Parenteral *)</td>
+                <td><input class="ratio-input" type="text" id="8a" value="15" disabled aria-label="Ekvianalgetisk ratio: Hydromorfon Parenteral" /></td>
+                <td><input class="dose-input" type="text" id="8b" value="0" aria-label="Døgndose: Hydromorfon Parenteral" /></td>
+                <td class="omeq"><span id="result8">0</span></td>
+              </tr>
+              <tr>
+                <td title="Ketorax tabletter, Ketorax / Ketobemidon SA inj., Ketogan stikkpiller">Ketobemidon (N02AB01 og N02AG02) ⓘ</td>
+                <td>Oral</td>
+                <td><input class="ratio-input" type="text" id="9a" value="1" disabled aria-label="Ekvianalgetisk ratio: Ketobemidon Oral" /></td>
+                <td><input class="dose-input" type="text" id="9b" value="0" aria-label="Døgndose: Ketobemidon Oral" /></td>
+                <td class="omeq"><span id="result9">0</span></td>
+              </tr>
+              <tr>
+                <td title="Ketorax tabletter, Ketorax / Ketobemidon SA inj., Ketogan stikkpiller"></td>
+                <td>Parenteral *)</td>
+                <td><input class="ratio-input" type="text" id="10a" value="3" disabled aria-label="Ekvianalgetisk ratio: Ketobemidon Parenteral" /></td>
+                <td><input class="dose-input" type="text" id="10b" value="0" aria-label="Døgndose: Ketobemidon Parenteral" /></td>
+                <td class="omeq"><span id="result10">0</span></td>
+              </tr>
+              <tr>
+                <td title="Ketorax tabletter, Ketorax / Ketobemidon SA inj., Ketogan stikkpiller"></td>
+                <td title="Vær oppmerksom på at det er døgndosen i mg av virkestoffet ketobemidon som må legges inn.">Rektal **) ⓘ</td>
+                <td><input class="ratio-input" type="text" id="11a" value="0,30" disabled aria-label="Ekvianalgetisk ratio: Ketobemidon Rektal" /></td>
+                <td><input class="dose-input" type="text" id="11b" value="0" aria-label="Døgndose: Ketobemidon Rektal" /></td>
+                <td class="omeq"><span id="result11">0</span></td>
+              </tr>
+              <tr>
+                <td title="Altermol / Kodein / Paralgin Forte / Pinex Forte tabletter, Pinex Forte brusetabletter, Paralgin Forte / Paralgin Major / Pinex Forte stikkpiller">Kodein (N02AJ06 og R05DA04) ⓘ</td>
+                <td title="Vær oppmerksom på at det er døgndosen i mg av virkestoffet kodein som må legges inn.">Oral/rektal ⓘ</td>
+                <td><input class="ratio-input" type="text" id="12a" value="0,10" disabled aria-label="Ekvianalgetisk ratio: Kodein Oral/rektal" /></td>
+                <td><input class="dose-input" type="text" id="12b" value="0" aria-label="Døgndose: Kodein Oral/rektal" /></td>
+                <td class="omeq"><span id="result12">0</span></td>
+              </tr>
+              <tr>
+                <td title="Metadon Abcur tabletter, Metadon mikstur (dne/Martindale/Pharmadone), Metadon NAF inj.">Metadon (N07BC02) ⓘ</td>
+                <td title="Vær oppmerksom på ulike styrker på miksturene. Legg inn døgndose i mg, ikke i ml.">Oral ⓘ</td>
+                <td><input class="ratio-input" type="text" id="13a" value="6" disabled aria-label="Ekvianalgetisk ratio: Metadon Oral" /></td>
+                <td><input class="dose-input" type="text" id="13b" value="0" aria-label="Døgndose: Metadon Oral" /></td>
+                <td class="omeq"><span id="result13">0</span></td>
+              </tr>
+              <tr>
+                <td title="Metadon Abcur tabletter, Metadon mikstur (dne/Martindale/Pharmadone), Metadon NAF inj."></td>
+                <td>Parenteral *)</td>
+                <td><input class="ratio-input" type="text" id="14a" value="6" disabled aria-label="Ekvianalgetisk ratio: Metadon Parenteral" /></td>
+                <td><input class="dose-input" type="text" id="14b" value="0" aria-label="Døgndose: Metadon Parenteral" /></td>
+                <td class="omeq"><span id="result14">0</span></td>
+              </tr>
+              <tr>
+                <td title="Morfin tabletter, Dolcontin/Malfin depottabletter, Dolcontin depotgran. til mikstur, Morfin NAF / Morfin SA / Oramorph mikstur, Oramorph dråper, Morfin Abcur / Morfin Epidural, Morfin NAF, Morfin SA injekskjonsvæske, Morfin SA stikkpiller">Morfin (N02AA01) ⓘ</td>
+                <td>Oral</td>
+                <td><input class="ratio-input" type="text" id="15a" value="1" disabled aria-label="Ekvianalgetisk ratio: Morfin Oral" /></td>
+                <td><input class="dose-input" type="text" id="15b" value="0" aria-label="Døgndose: Morfin Oral" /></td>
+                <td class="omeq"><span id="result15">0</span></td>
+              </tr>
+              <tr>
+                <td title="Morfin tabletter, Dolcontin/Malfin depottabletter, Dolcontin depotgran. til mikstur, Morfin NAF / Morfin SA / Oramorph mikstur, Oramorph dråper, Morfin Abcur / Morfin Epidural, Morfin NAF, Morfin SA injekskjonsvæske, Morfin SA stikkpiller"></td>
+                <td>Parenteral *)</td>
+                <td><input class="ratio-input" type="text" id="16a" value="3" disabled aria-label="Ekvianalgetisk ratio: Morfin Parenteral" /></td>
+                <td><input class="dose-input" type="text" id="16b" value="0" aria-label="Døgndose: Morfin Parenteral" /></td>
+                <td class="omeq"><span id="result16">0</span></td>
+              </tr>
+              <tr>
+                <td title="Morfin tabletter, Dolcontin/Malfin depottabletter, Dolcontin depotgran. til mikstur, Morfin NAF / Morfin SA / Oramorph mikstur, Oramorph dråper, Morfin Abcur / Morfin Epidural, Morfin NAF, Morfin SA injekskjonsvæske, Morfin SA stikkpiller"></td>
+                <td>Rektal</td>
+                <td><input class="ratio-input" type="text" id="17a" value="0,94" disabled aria-label="Ekvianalgetisk ratio: Morfin Rektal" /></td>
+                <td><input class="dose-input" type="text" id="17b" value="0" aria-label="Døgndose: Morfin Rektal" /></td>
+                <td class="omeq"><span id="result17">0</span></td>
+              </tr>
+              <tr>
+                <td title="Oxycodone/OxyNorm kapsler, Oxycodone/OxyContin/Reltebon/Tanonalla/Targiniq depottabletter, OxyNorm mikstur, OxyNorm inj./inf.">Oksykodon (N02AA05 og N02AA55) ⓘ</td>
+                <td title="For Targiniq: Hvis styrken 10mg/5mg skal benyttes, legg inn 10. For Tanonalla/Targiniq: Vær oppmerksom på at det er døgndosen i mg av virkestoffet oksykodon som må legges inn.">Oral ⓘ</td>
+                <td><input class="ratio-input" type="text" id="18a" value="1,50" disabled aria-label="Ekvianalgetisk ratio: Oksykodon Oral" /></td>
+                <td><input class="dose-input" type="text" id="18b" value="0" aria-label="Døgndose: Oksykodon Oral" /></td>
+                <td class="omeq"><span id="result18">0</span></td>
+              </tr>
+              <tr>
+                <td title="Oxycodone/OxyNorm kapsler, Oxycodone/OxyContin/Reltebon/Tanonalla/Targiniq depottabletter, OxyNorm mikstur, OxyNorm inj./inf."></td>
+                <td>Parenteral *)</td>
+                <td><input class="ratio-input" type="text" id="19a" value="3" disabled aria-label="Ekvianalgetisk ratio: Oksykodon Parenteral" /></td>
+                <td><input class="dose-input" type="text" id="19b" value="0" aria-label="Døgndose: Oksykodon Parenteral" /></td>
+                <td class="omeq"><span id="result19">0</span></td>
+              </tr>
+              <tr>
+                <td title="Dropizol dråper">Opium (morfin) (A07DA02) ⓘ</td>
+                <td title="1 dråpe inneholder 0,5 mg morfin. Dvs. 10 dråper = 5 mg morfin.">Oral ⓘ</td>
+                <td><input class="ratio-input" type="text" id="20a" value="1" disabled aria-label="Ekvianalgetisk ratio: Opium (morfin) Oral" /></td>
+                <td><input class="dose-input" type="text" id="20b" value="0" aria-label="Døgndose: Opium (morfin) Oral" /></td>
+                <td class="omeq"><span id="result20">0</span></td>
+              </tr>
+              <tr>
+                <td title="Dolcontral stikkpiller, Petidin inj.">Petidin (N02AB02) ⓘ</td>
+                <td>Parenteral *)</td>
+                <td><input class="ratio-input" type="text" id="21a" value="0,30" disabled aria-label="Ekvianalgetisk ratio: Petidin Parenteral" /></td>
+                <td><input class="dose-input" type="text" id="21b" value="0" aria-label="Døgndose: Petidin Parenteral" /></td>
+                <td class="omeq"><span id="result21">0</span></td>
+              </tr>
+              <tr>
+                <td title="Dolcontral stikkpiller, Petidin inj."></td>
+                <td>Rektal **)</td>
+                <td><input class="ratio-input" type="text" id="22a" value="0,10" disabled aria-label="Ekvianalgetisk ratio: Petidin Rektal" /></td>
+                <td><input class="dose-input" type="text" id="22b" value="0" aria-label="Døgndose: Petidin Rektal" /></td>
+                <td class="omeq"><span id="result22">0</span></td>
+              </tr>
+              <tr>
+                <td title="Palexia tabletter, Palexia depot depottabletter, Palexia mikstur">Tapentadol (N02AX06) ⓘ</td>
+                <td>Oral</td>
+                <td><input class="ratio-input" type="text" id="23a" value="0,20" disabled aria-label="Ekvianalgetisk ratio: Tapentadol Oral" /></td>
+                <td><input class="dose-input" type="text" id="23b" value="0" aria-label="Døgndose: Tapentadol Oral" /></td>
+                <td class="omeq"><span id="result23">0</span></td>
+              </tr>
+              <tr>
+                <td title="Tramadol/Paracetamol tabletter, Nobligan/Tramadol kapsler, Nobligan Retard / Tramagetic OD / Tramagetic Retard depottabletter">Tramadol (N02AX02) ⓘ</td>
+                <td>Oral</td>
+                <td><input class="ratio-input" type="text" id="24a" value="0,15" disabled aria-label="Ekvianalgetisk ratio: Tramadol Oral" /></td>
+                <td><input class="dose-input" type="text" id="24b" value="0" aria-label="Døgndose: Tramadol Oral" /></td>
+                <td class="omeq"><span id="result24">0</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="totals">
+          <div class="label"><strong>Totalsum:</strong></div>
+          <div class="value"><span id="result">0</span></div>
+          <div class="label">mg OMEQ</div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Keep "height behavior" similar to transcribe.html
+    function setGridHeight() {
+      const grid = document.querySelector(".grid-container");
+      if (!grid) return;
+      const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      grid.style.height = height + "px";
+    }
+    window.addEventListener("load", function () {
+      setGridHeight();
+      let interval = setInterval(setGridHeight, 200);
+      setTimeout(() => clearInterval(interval), 2000);
+    });
+    window.addEventListener("resize", setGridHeight);
+
+    // Back button (adjust if you use a different home path)
+    // NOTE: Guard in case the button isn't present on this page.
+    const backBtn = document.getElementById("backToHomeButton");
+    if (backBtn) {
+      backBtn.addEventListener("click", () => {
+        const loc = window.location;
+        const newPath = loc.pathname.replace(/\/[^\/]*$/, "/index.html");
+        window.location.href = loc.origin + newPath + loc.search + loc.hash;
+      });
+    }
+
+    // ===== OMEQ logic copied from provided script (same rounding + sum behavior) =====
+    var totalElements = parseInt(document.getElementById('totalResults').value, 10);
+
+    // Optional: prefill inputs from ?input=.../...
+    (function prefillFromQuery() {
+      try {
+        const href = window.location.href;
+        const idx = href.indexOf("?input=");
+        if (idx === -1) return;
+        const part = href.substring(idx + "?input=".length).split("&")[0];
+        const vals = part.split("/");
+        for (let i = 0; i < totalElements; i++) {
+          const v = (vals[i] !== undefined && vals[i] !== null) ? vals[i] : "0";
+          const el = document.getElementById(`${i + 1}b`);
+          if (el) el.value = v;
+        }
+      } catch (_) {}
+    })();
+
+    document.addEventListener('input', function(e){
+      for (var i = 0; i < totalElements; i++){
+        if (e.target && e.target.id == `${i + 1}b`) {
+          multiplyBy();
+          sum();
+          changeUrl();
+          break;
+        }
+      }
+    });
+
+    window.addEventListener("load", function(){
+      multiplyBy();
+      sum();
+      changeUrl();
+    });
+
+    function multiplyBy() {
+      for (var i = 0; i < totalElements; i++) {
+        const num1 = document.getElementById(`${i + 1}a`).value.replace(/,/g, '.');
+        const num2 = document.getElementById(`${i + 1}b`).value.replace(/,/g, '.');
+        const prod = (num1 * num2);
+        let result = ((prod % 1) < 0.1) ? prod.toFixed(0) : prod.toFixed(1);
+        document.getElementById(`result${i + 1}`).innerHTML = !isNaN(result) ? result.replace(/\./g, ',') : '##';
+      }
+    }
+
+    function sum() {
+      const my_input = [];
+      for (var i = 0; i < totalElements; i++) {
+        const cell = document.getElementById(`result${i + 1}`).innerHTML.replace(/,/g, '.');
+        const n = parseFloat(cell);
+        my_input.push(Number.isFinite(n) ? n : 0);
+      }
+      document.getElementById('result').innerHTML =
+        my_input.reduce((a, b) => a + b, 0).toString().replace(/\./g, ',');
+    }
+
+    function changeUrl() {
+      my_input = [];
+      for (var i = 0; i < totalElements; i++) {
+        const inputValue = document.getElementById(`${i + 1}b`).value;
+        if (inputValue) my_input.push(inputValue);
+        else my_input.push(0);
+      }
+
+      if (my_input.length > 0) {
+        // Use current page as base (keeps same ?input=/... behavior)
+        let base = window.location.href;
+        // reset base by removing existing ?input=... if present
+        const idx = base.indexOf("?input=");
+        if (idx > -1) base = base.substring(0, idx);
+        // also remove other query/hash
+        base = base.split("?")[0].split("#")[0];
+
+        const next = `${base}?input=${my_input.join('/')}`;
+        try {
+          window.history.pushState(null, null, next);
+        } catch (_) {
+          // ignore for file:// environments
+        }
+      }
+    }
+
+    function eraseInputs() {
+      for (var i = 0; i < totalElements; i++) {
+        document.getElementById(`${i + 1}b`).value = 0;
+      }
+      multiplyBy();
+      sum();
+      changeUrl();
+    }
+  </script>
+</body>
+</html>

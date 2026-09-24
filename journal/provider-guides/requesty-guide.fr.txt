@@ -1,0 +1,19 @@
+REQUESTY – CLÉ API ET CONFIDENTIALITÉ
+
+1. Créer un compte et ajouter des crédits
+
+Rendez-vous sur https://app.requesty.ai, créez un compte et ouvrez les paramètres de facturation. Ajoutez un moyen de paiement et créditez le solde souhaité.
+
+2. Créer une clé API
+
+Ouvrez API Keys, sélectionnez Create New API Key, donnez un nom à la clé et créez-la. Copiez-la immédiatement, car la clé complète n’est affichée qu’au moment de sa création.
+
+3. Désactiver la journalisation des prompts et des réponses
+
+Trouvez la clé sous API Keys, ouvrez ses paramètres et réglez Logging sur Off. Requesty ne conservera alors pas le contenu des prompts ni des réponses envoyés avec cette clé.
+
+4. Utiliser la clé dans l’application
+
+Collez la clé dans le champ Requesty API key de la page d’accueil. Ouvrez ensuite l’outil de transcription, sélectionnez Requesty comme fournisseur de génération de notes et choisissez le modèle souhaité.
+
+Confidentialité : tous les modèles Requesty disponibles dans cette application sont sélectionnés pour un traitement exclusivement dans l’UE, sans conservation des données ni entraînement des modèles ; la journalisation des prompts et des réponses doit être désactivée pour la clé API.

@@ -1,0 +1,28 @@
+SONIOX – API-NØKKEL OG EU-TILGANG
+
+1. Opprett konto og fyll på kreditter
+
+Gå til https://console.soniox.com, opprett en konto og åpne Billing eller Credits. Legg inn betalingsmåte og fyll på ønsket saldo.
+
+2. Søk om EU-tilgang
+
+Send en e-post til support@soniox.com og be om tilgang til Soniox’ EU regional deployment. Opplys at du trenger et EU-prosjekt og en EU-API-nøkkel.
+
+Forslag til melding:
+
+Hello,
+
+I would like to use the Soniox Speech-to-Text API for clinical consultations. Could you enable access to the European Union regional deployment for my account so that I can create an EU project and API key?
+
+Kind regards,
+[Navn / virksomhet]
+
+3. Opprett EU-prosjekt og API-nøkkel
+
+Når EU-tilgangen er aktivert, oppretter du et nytt prosjekt i Soniox Console og velger European Union som region. Åpne deretter API Keys i EU-prosjektet, opprett en nøkkel og kopier den med én gang.
+
+4. Bruk nøkkelen i appen
+
+Lim nøkkelen inn i feltet Soniox API key på forsiden. Åpne transkripsjonsverktøyet, velg Soniox som tale-til-tekst-leverandør og velg EU som endepunkt.
+
+Personvern: Med en API-nøkkel fra et Soniox EU-prosjekt og EU-endepunktet valgt i appen, brukes tjenesten med ZDR, behandling kun i EU og ingen modelltrening.

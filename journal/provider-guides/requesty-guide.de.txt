@@ -1,0 +1,19 @@
+REQUESTY – API-SCHLÜSSEL UND DATENSCHUTZ
+
+1. Konto erstellen und Guthaben aufladen
+
+Rufen Sie https://app.requesty.ai auf, erstellen Sie ein Konto und öffnen Sie die Zahlungseinstellungen. Hinterlegen Sie eine Zahlungsmethode und laden Sie das gewünschte Guthaben auf.
+
+2. API-Schlüssel erstellen
+
+Öffnen Sie API Keys, wählen Sie Create New API Key, geben Sie dem Schlüssel einen Namen und erstellen Sie ihn. Kopieren Sie den Schlüssel sofort, da er nur bei der Erstellung vollständig angezeigt wird.
+
+3. Protokollierung von Prompts und Antworten ausschalten
+
+Suchen Sie den Schlüssel unter API Keys, öffnen Sie seine Einstellungen und setzen Sie Logging auf Off. Requesty speichert dann keine Inhalte der mit diesem Schlüssel gesendeten Prompts oder Antworten.
+
+4. Schlüssel in der App verwenden
+
+Fügen Sie den Schlüssel auf der Startseite in das Feld Requesty API key ein. Öffnen Sie anschließend das Transkriptionswerkzeug, wählen Sie Requesty als Anbieter für die Notizerstellung und wählen Sie das gewünschte Modell.
+
+Datenschutz: Alle in dieser App verfügbaren Requesty-Modelle sind für eine ausschließliche Verarbeitung in der EU ohne Datenspeicherung und ohne Modelltraining ausgewählt; die Protokollierung von Prompts und Antworten sollte für den API-Schlüssel ausgeschaltet sein.
